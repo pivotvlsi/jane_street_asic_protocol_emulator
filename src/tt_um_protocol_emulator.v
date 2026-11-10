@@ -15,27 +15,80 @@ module tt_um_protocol_emulator (
     wire spi_cs   = ui_in[0];
     wire spi_sclk = ui_in[1];
     wire spi_mosi = ui_in[2];
-    wire spi_miso = 1'b0;
+    wire spi_miso;
     assign uo_out[0] = spi_miso;
 
     // ========================================================
     // SPI SLAVE 
     // ========================================================
 
-    wire [7:0] cpu0_rx_fifo_wdata = 8'h00; wire cpu0_rx_fifo_we = 1'b0;
-    wire [7:0] cpu0_tx_fifo_rdata; wire cpu0_tx_fifo_re = 1'b0; wire cpu0_tx_fifo_empty;
+    wire [6:0] cpu0_ram_op_waddr; wire [3:0] cpu0_ram_op_wdata; wire cpu0_ram_op_we;
+    wire [5:0] cpu0_ram_op1_waddr; wire [3:0] cpu0_ram_op1_wdata; wire cpu0_ram_op1_we;
+    wire [2:0] cpu0_ram_op2_waddr; wire [3:0] cpu0_ram_op2_wdata; wire cpu0_ram_op2_we;
+    wire [3:0] cpu0_jmp_waddr; wire [15:0] cpu0_jmp_wdata; wire cpu0_jmp_we;
+
+    wire [6:0] cpu1_ram_op_waddr; wire [3:0] cpu1_ram_op_wdata; wire cpu1_ram_op_we;
+    wire [5:0] cpu1_ram_op1_waddr; wire [3:0] cpu1_ram_op1_wdata; wire cpu1_ram_op1_we;
+    wire [2:0] cpu1_ram_op2_waddr; wire [3:0] cpu1_ram_op2_wdata; wire cpu1_ram_op2_we;
+    wire [3:0] cpu1_jmp_waddr; wire [15:0] cpu1_jmp_wdata; wire cpu1_jmp_we;
+
+    wire [6:0] cpu2_ram_op_waddr; wire [3:0] cpu2_ram_op_wdata; wire cpu2_ram_op_we;
+    wire [5:0] cpu2_ram_op1_waddr; wire [3:0] cpu2_ram_op1_wdata; wire cpu2_ram_op1_we;
+    wire [2:0] cpu2_ram_op2_waddr; wire [3:0] cpu2_ram_op2_wdata; wire cpu2_ram_op2_we;
+    wire [3:0] cpu2_jmp_waddr; wire [15:0] cpu2_jmp_wdata; wire cpu2_jmp_we;
+
+    wire [6:0] cpu3_ram_op_waddr; wire [3:0] cpu3_ram_op_wdata; wire cpu3_ram_op_we;
+    wire [5:0] cpu3_ram_op1_waddr; wire [3:0] cpu3_ram_op1_wdata; wire cpu3_ram_op1_we;
+    wire [2:0] cpu3_ram_op2_waddr; wire [3:0] cpu3_ram_op2_wdata; wire cpu3_ram_op2_we;
+    wire [3:0] cpu3_jmp_waddr; wire [15:0] cpu3_jmp_wdata; wire cpu3_jmp_we;
+
+    wire [7:0] cpu0_rx_fifo_wdata; wire cpu0_rx_fifo_we;
+    wire [7:0] cpu0_tx_fifo_rdata; wire cpu0_tx_fifo_re; wire cpu0_tx_fifo_empty;
     wire cpu0_run = ui_in[4];
-    wire [7:0] cpu1_rx_fifo_wdata = 8'h00; wire cpu1_rx_fifo_we = 1'b0;
-    wire [7:0] cpu1_tx_fifo_rdata; wire cpu1_tx_fifo_re = 1'b0; wire cpu1_tx_fifo_empty;
+    wire [7:0] cpu1_rx_fifo_wdata; wire cpu1_rx_fifo_we;
+    wire [7:0] cpu1_tx_fifo_rdata; wire cpu1_tx_fifo_re; wire cpu1_tx_fifo_empty;
     wire cpu1_run = ui_in[5];
-    wire [7:0] cpu2_rx_fifo_wdata = 8'h00; wire cpu2_rx_fifo_we = 1'b0;
-    wire [7:0] cpu2_tx_fifo_rdata; wire cpu2_tx_fifo_re = 1'b0; wire cpu2_tx_fifo_empty;
+    wire [7:0] cpu2_rx_fifo_wdata; wire cpu2_rx_fifo_we;
+    wire [7:0] cpu2_tx_fifo_rdata; wire cpu2_tx_fifo_re; wire cpu2_tx_fifo_empty;
     wire cpu2_run = ui_in[6];
-    wire [7:0] cpu3_rx_fifo_wdata = 8'h00; wire cpu3_rx_fifo_we = 1'b0;
-    wire [7:0] cpu3_tx_fifo_rdata; wire cpu3_tx_fifo_re = 1'b0; wire cpu3_tx_fifo_empty;
+    wire [7:0] cpu3_rx_fifo_wdata; wire cpu3_rx_fifo_we;
+    wire [7:0] cpu3_tx_fifo_rdata; wire cpu3_tx_fifo_re; wire cpu3_tx_fifo_empty;
     wire cpu3_run = ui_in[7];
 
 
+    spi_slave spi_inst (
+        .clk(clk), .rst_n(rst_n),
+        .spi_cs(spi_cs), .spi_sclk(spi_sclk), .spi_mosi(spi_mosi), .spi_miso(spi_miso),
+
+        .cpu0_ram_op_addr(cpu0_ram_op_waddr), .cpu0_ram_op_wdata(cpu0_ram_op_wdata), .cpu0_ram_op_we(cpu0_ram_op_we),
+        .cpu0_ram_op1_addr(cpu0_ram_op1_waddr), .cpu0_ram_op1_wdata(cpu0_ram_op1_wdata), .cpu0_ram_op1_we(cpu0_ram_op1_we),
+        .cpu0_ram_op2_addr(cpu0_ram_op2_waddr), .cpu0_ram_op2_wdata(cpu0_ram_op2_wdata), .cpu0_ram_op2_we(cpu0_ram_op2_we),
+        .cpu0_jmp_addr(cpu0_jmp_waddr), .cpu0_jmp_wdata(cpu0_jmp_wdata), .cpu0_jmp_we(cpu0_jmp_we),
+        .cpu0_rx_fifo_wdata(cpu0_rx_fifo_wdata), .cpu0_rx_fifo_we(cpu0_rx_fifo_we),
+        .cpu0_tx_fifo_rdata(cpu0_tx_fifo_rdata), .cpu0_tx_fifo_re(cpu0_tx_fifo_re),
+        .cpu0_tx_fifo_empty(cpu0_tx_fifo_empty),
+        .cpu1_ram_op_addr(cpu1_ram_op_waddr), .cpu1_ram_op_wdata(cpu1_ram_op_wdata), .cpu1_ram_op_we(cpu1_ram_op_we),
+        .cpu1_ram_op1_addr(cpu1_ram_op1_waddr), .cpu1_ram_op1_wdata(cpu1_ram_op1_wdata), .cpu1_ram_op1_we(cpu1_ram_op1_we),
+        .cpu1_ram_op2_addr(cpu1_ram_op2_waddr), .cpu1_ram_op2_wdata(cpu1_ram_op2_wdata), .cpu1_ram_op2_we(cpu1_ram_op2_we),
+        .cpu1_jmp_addr(cpu1_jmp_waddr), .cpu1_jmp_wdata(cpu1_jmp_wdata), .cpu1_jmp_we(cpu1_jmp_we),
+        .cpu1_rx_fifo_wdata(cpu1_rx_fifo_wdata), .cpu1_rx_fifo_we(cpu1_rx_fifo_we),
+        .cpu1_tx_fifo_rdata(cpu1_tx_fifo_rdata), .cpu1_tx_fifo_re(cpu1_tx_fifo_re),
+        .cpu1_tx_fifo_empty(cpu1_tx_fifo_empty),
+        .cpu2_ram_op_addr(cpu2_ram_op_waddr), .cpu2_ram_op_wdata(cpu2_ram_op_wdata), .cpu2_ram_op_we(cpu2_ram_op_we),
+        .cpu2_ram_op1_addr(cpu2_ram_op1_waddr), .cpu2_ram_op1_wdata(cpu2_ram_op1_wdata), .cpu2_ram_op1_we(cpu2_ram_op1_we),
+        .cpu2_ram_op2_addr(cpu2_ram_op2_waddr), .cpu2_ram_op2_wdata(cpu2_ram_op2_wdata), .cpu2_ram_op2_we(cpu2_ram_op2_we),
+        .cpu2_jmp_addr(cpu2_jmp_waddr), .cpu2_jmp_wdata(cpu2_jmp_wdata), .cpu2_jmp_we(cpu2_jmp_we),
+        .cpu2_rx_fifo_wdata(cpu2_rx_fifo_wdata), .cpu2_rx_fifo_we(cpu2_rx_fifo_we),
+        .cpu2_tx_fifo_rdata(cpu2_tx_fifo_rdata), .cpu2_tx_fifo_re(cpu2_tx_fifo_re),
+        .cpu2_tx_fifo_empty(cpu2_tx_fifo_empty),
+        .cpu3_ram_op_addr(cpu3_ram_op_waddr), .cpu3_ram_op_wdata(cpu3_ram_op_wdata), .cpu3_ram_op_we(cpu3_ram_op_we),
+        .cpu3_ram_op1_addr(cpu3_ram_op1_waddr), .cpu3_ram_op1_wdata(cpu3_ram_op1_wdata), .cpu3_ram_op1_we(cpu3_ram_op1_we),
+        .cpu3_ram_op2_addr(cpu3_ram_op2_waddr), .cpu3_ram_op2_wdata(cpu3_ram_op2_wdata), .cpu3_ram_op2_we(cpu3_ram_op2_we),
+        .cpu3_jmp_addr(cpu3_jmp_waddr), .cpu3_jmp_wdata(cpu3_jmp_wdata), .cpu3_jmp_we(cpu3_jmp_we),
+        .cpu3_rx_fifo_wdata(cpu3_rx_fifo_wdata), .cpu3_rx_fifo_we(cpu3_rx_fifo_we),
+        .cpu3_tx_fifo_rdata(cpu3_tx_fifo_rdata), .cpu3_tx_fifo_re(cpu3_tx_fifo_re),
+        .cpu3_tx_fifo_empty(cpu3_tx_fifo_empty)
+    );
 
     // ========================================================
     // SHARED REGISTERS (0x9 and 0xA)
@@ -99,23 +152,28 @@ module tt_um_protocol_emulator (
     // ========================================================
     // CPU 0 SUBSYSTEM
     // ========================================================
-    // ROM Instantiation
-    wire [3:0] cpu0_rom_op_data;
-    wire [3:0] cpu0_rom_op1_data;
-    wire [3:0] cpu0_rom_op2_data;
-    wire [16:0] cpu0_jmp_data;
+    // Split Stream ROMs
+    reg [3:0] cpu0_rom_op [0:127];
+    reg [3:0] cpu0_rom_op1 [0:63];
+    reg [3:0] cpu0_rom_op2 [0:15];
+    reg [16:0] cpu0_jmp_table [0:15];
     
-    rom_cpu0 rom0 (
-        .pc_op(cpu0_pc_op), .op_data(cpu0_rom_op_data),
-        .pc_op1(cpu0_pc_op1), .op1_data(cpu0_rom_op1_data),
-        .pc_op2(cpu0_pc_op2), .op2_data(cpu0_rom_op2_data),
-        .jmp_addr(cpu0_jmp_addr), .jmp_data(cpu0_jmp_data)
-    );
+    always @(posedge clk) begin
+        if (cpu0_ram_op_we) cpu0_rom_op[cpu0_ram_op_waddr] <= cpu0_ram_op_wdata;
+        if (cpu0_ram_op1_we) cpu0_rom_op1[cpu0_ram_op1_waddr] <= cpu0_ram_op1_wdata;
+        if (cpu0_ram_op2_we) cpu0_rom_op2[cpu0_ram_op2_waddr] <= cpu0_ram_op2_wdata;
+        if (cpu0_jmp_we) cpu0_jmp_table[cpu0_jmp_waddr] <= cpu0_jmp_wdata;
+    end
+    
     wire [6:0] cpu0_pc_op;
     wire [5:0] cpu0_pc_op1;
     wire [3:0] cpu0_pc_op2;
     wire [3:0] cpu0_jmp_addr;
     
+    wire [3:0] cpu0_rom_op_data = cpu0_rom_op[cpu0_pc_op];
+    wire [3:0] cpu0_rom_op1_data = cpu0_rom_op1[cpu0_pc_op1];
+    wire [3:0] cpu0_rom_op2_data = cpu0_rom_op2[cpu0_pc_op2];
+    wire [16:0] cpu0_jmp_data = cpu0_jmp_table[cpu0_jmp_addr];
 
     wire [3:0] cpu0_pin_out, cpu0_pin_dir;
     wire [3:0] cpu0_mem_addr;
@@ -172,28 +230,37 @@ module tt_um_protocol_emulator (
         .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid})
     );
     
-
+    always @(posedge clk) begin
+        if (cpu0_run) begin
+            $display("DBG|0|%0t|OP=%h:%h|OP1=%h:%h|%h|%h|%h|%h|%h|%h|%h|%h|%h|%h|%h", $time, cpu0_pc_op, cpu0_rom_op_data, cpu0_pc_op1, cpu0_rom_op1_data, core0.acc, core0.b_reg, core0.r_regs[2], core0.r_regs[3], core0.r_regs[4], core0.r_regs[8], core0.flag_carry, core0.flag_zero, core0.pin_dir, core0.pin_out, 8'h0);
+        end
+    end
 
     // ========================================================
     // CPU 1 SUBSYSTEM
     // ========================================================
-    // ROM Instantiation
-    wire [3:0] cpu1_rom_op_data;
-    wire [3:0] cpu1_rom_op1_data;
-    wire [3:0] cpu1_rom_op2_data;
-    wire [16:0] cpu1_jmp_data;
+    // Split Stream ROMs
+    reg [3:0] cpu1_rom_op [0:127];
+    reg [3:0] cpu1_rom_op1 [0:63];
+    reg [3:0] cpu1_rom_op2 [0:15];
+    reg [16:0] cpu1_jmp_table [0:15];
     
-    rom_cpu1 rom1 (
-        .pc_op(cpu1_pc_op), .op_data(cpu1_rom_op_data),
-        .pc_op1(cpu1_pc_op1), .op1_data(cpu1_rom_op1_data),
-        .pc_op2(cpu1_pc_op2), .op2_data(cpu1_rom_op2_data),
-        .jmp_addr(cpu1_jmp_addr), .jmp_data(cpu1_jmp_data)
-    );
+    always @(posedge clk) begin
+        if (cpu1_ram_op_we) cpu1_rom_op[cpu1_ram_op_waddr] <= cpu1_ram_op_wdata;
+        if (cpu1_ram_op1_we) cpu1_rom_op1[cpu1_ram_op1_waddr] <= cpu1_ram_op1_wdata;
+        if (cpu1_ram_op2_we) cpu1_rom_op2[cpu1_ram_op2_waddr] <= cpu1_ram_op2_wdata;
+        if (cpu1_jmp_we) cpu1_jmp_table[cpu1_jmp_waddr] <= cpu1_jmp_wdata;
+    end
+    
     wire [6:0] cpu1_pc_op;
     wire [5:0] cpu1_pc_op1;
     wire [3:0] cpu1_pc_op2;
     wire [3:0] cpu1_jmp_addr;
     
+    wire [3:0] cpu1_rom_op_data = cpu1_rom_op[cpu1_pc_op];
+    wire [3:0] cpu1_rom_op1_data = cpu1_rom_op1[cpu1_pc_op1];
+    wire [3:0] cpu1_rom_op2_data = cpu1_rom_op2[cpu1_pc_op2];
+    wire [16:0] cpu1_jmp_data = cpu1_jmp_table[cpu1_jmp_addr];
 
     wire [3:0] cpu1_pin_out, cpu1_pin_dir;
     wire [3:0] cpu1_pin_in = uio_in[3:0];
@@ -213,7 +280,9 @@ module tt_um_protocol_emulator (
     fifo tx1 (.clk(clk), .rst_n(rst_n), .wdata(cpu1_mem_wdata), .we(cpu1_tx_we),
               .rdata(cpu1_tx_fifo_rdata), .re(cpu1_tx_fifo_re), .empty(cpu1_tx_fifo_empty), .full(cpu1_tx_full));
 
-
+    always @(posedge clk) begin
+        if (cpu1_tx_we) $display("[%0t] CPU 1 WROTE TO TX FIFO: 0x%h", $time, cpu1_mem_wdata);
+    end
 
     wire [7:0] cpu1_timer_rdata; wire cpu1_timer_zero;
     wire cpu1_timer_we_l = (cpu1_mem_addr == 4'h7) && cpu1_mem_we;
@@ -253,28 +322,37 @@ module tt_um_protocol_emulator (
         .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid})
     );
 
-
+    always @(posedge clk) begin
+        if (cpu1_run) begin
+            $display("DBG|1|%0t|OP=%h:%h|OP1=%h:%h|%h|%h|%h|%h|%h|%h|%h|%h|%h|%h|%h", $time, cpu1_pc_op, cpu1_rom_op_data, cpu1_pc_op1, cpu1_rom_op1_data, core1.acc, core1.b_reg, core1.r_regs[2], core1.r_regs[3], core1.r_regs[4], core1.r_regs[8], core1.flag_carry, core1.flag_zero, core1.pin_dir, core1.pin_out, 8'h0);
+        end
+    end
 
     // ========================================================
     // CPU 2 SUBSYSTEM
     // ========================================================
-    // ROM Instantiation
-    wire [3:0] cpu2_rom_op_data;
-    wire [3:0] cpu2_rom_op1_data;
-    wire [3:0] cpu2_rom_op2_data;
-    wire [16:0] cpu2_jmp_data;
+    // Split Stream ROMs
+    reg [3:0] cpu2_rom_op [0:127];
+    reg [3:0] cpu2_rom_op1 [0:63];
+    reg [3:0] cpu2_rom_op2 [0:15];
+    reg [16:0] cpu2_jmp_table [0:15];
     
-    rom_cpu2 rom2 (
-        .pc_op(cpu2_pc_op), .op_data(cpu2_rom_op_data),
-        .pc_op1(cpu2_pc_op1), .op1_data(cpu2_rom_op1_data),
-        .pc_op2(cpu2_pc_op2), .op2_data(cpu2_rom_op2_data),
-        .jmp_addr(cpu2_jmp_addr), .jmp_data(cpu2_jmp_data)
-    );
+    always @(posedge clk) begin
+        if (cpu2_ram_op_we) cpu2_rom_op[cpu2_ram_op_waddr] <= cpu2_ram_op_wdata;
+        if (cpu2_ram_op1_we) cpu2_rom_op1[cpu2_ram_op1_waddr] <= cpu2_ram_op1_wdata;
+        if (cpu2_ram_op2_we) cpu2_rom_op2[cpu2_ram_op2_waddr] <= cpu2_ram_op2_wdata;
+        if (cpu2_jmp_we) cpu2_jmp_table[cpu2_jmp_waddr] <= cpu2_jmp_wdata;
+    end
+    
     wire [6:0] cpu2_pc_op;
     wire [5:0] cpu2_pc_op1;
     wire [3:0] cpu2_pc_op2;
     wire [3:0] cpu2_jmp_addr;
     
+    wire [3:0] cpu2_rom_op_data = cpu2_rom_op[cpu2_pc_op];
+    wire [3:0] cpu2_rom_op1_data = cpu2_rom_op1[cpu2_pc_op1];
+    wire [3:0] cpu2_rom_op2_data = cpu2_rom_op2[cpu2_pc_op2];
+    wire [16:0] cpu2_jmp_data = cpu2_jmp_table[cpu2_jmp_addr];
 
     wire [3:0] cpu2_pin_out, cpu2_pin_dir;
     wire [3:0] cpu2_pin_in = uio_in[3:0];
@@ -332,28 +410,37 @@ module tt_um_protocol_emulator (
         .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid})
     );
 
-
+    always @(posedge clk) begin
+        if (cpu2_run && !cpu2_mem_stall) begin
+            $display("DBG|2|%0t|OP=%h:%h|OP1=%h:%h|%h|%h|%h|%h|%h|%h|%h|%h|%h|%h|%h", $time, cpu2_pc_op, cpu2_rom_op_data, cpu2_pc_op1, cpu2_rom_op1_data, core2.acc, core2.b_reg, core2.r_regs[2], core2.r_regs[3], core2.r_regs[4], core2.r_regs[8], core2.flag_carry, core2.flag_zero, core2.pin_dir, core2.pin_out, 8'h0);
+        end
+    end
 
     // ========================================================
     // CPU 3 SUBSYSTEM
     // ========================================================
-    // ROM Instantiation
-    wire [3:0] cpu3_rom_op_data;
-    wire [3:0] cpu3_rom_op1_data;
-    wire [3:0] cpu3_rom_op2_data;
-    wire [16:0] cpu3_jmp_data;
+    // Split Stream ROMs
+    reg [3:0] cpu3_rom_op [0:127];
+    reg [3:0] cpu3_rom_op1 [0:63];
+    reg [3:0] cpu3_rom_op2 [0:15];
+    reg [16:0] cpu3_jmp_table [0:15];
     
-    rom_cpu3 rom3 (
-        .pc_op(cpu3_pc_op), .op_data(cpu3_rom_op_data),
-        .pc_op1(cpu3_pc_op1), .op1_data(cpu3_rom_op1_data),
-        .pc_op2(cpu3_pc_op2), .op2_data(cpu3_rom_op2_data),
-        .jmp_addr(cpu3_jmp_addr), .jmp_data(cpu3_jmp_data)
-    );
+    always @(posedge clk) begin
+        if (cpu3_ram_op_we) cpu3_rom_op[cpu3_ram_op_waddr] <= cpu3_ram_op_wdata;
+        if (cpu3_ram_op1_we) cpu3_rom_op1[cpu3_ram_op1_waddr] <= cpu3_ram_op1_wdata;
+        if (cpu3_ram_op2_we) cpu3_rom_op2[cpu3_ram_op2_waddr] <= cpu3_ram_op2_wdata;
+        if (cpu3_jmp_we) cpu3_jmp_table[cpu3_jmp_waddr] <= cpu3_jmp_wdata;
+    end
+    
     wire [6:0] cpu3_pc_op;
     wire [5:0] cpu3_pc_op1;
     wire [3:0] cpu3_pc_op2;
     wire [3:0] cpu3_jmp_addr;
     
+    wire [3:0] cpu3_rom_op_data = cpu3_rom_op[cpu3_pc_op];
+    wire [3:0] cpu3_rom_op1_data = cpu3_rom_op1[cpu3_pc_op1];
+    wire [3:0] cpu3_rom_op2_data = cpu3_rom_op2[cpu3_pc_op2];
+    wire [16:0] cpu3_jmp_data = cpu3_jmp_table[cpu3_jmp_addr];
 
     wire [3:0] cpu3_pin_out, cpu3_pin_dir;
     wire [3:0] cpu3_pin_in = uio_in[3:0];
@@ -435,5 +522,9 @@ module tt_um_protocol_emulator (
     assign uo_out[6] = cpu1_tx_fifo_empty;
     assign uo_out[7] = cpu2_tx_fifo_empty; // cpu3_tx_empty omitted from physical pins
 
-
+    always @(posedge clk) begin
+        if (cpu3_run && !cpu3_mem_stall) begin
+            $display("DBG|3|%0t|OP=%h:%h|OP1=%h:%h|%h|%h|%h|%h|%h|%h|%h|%h|%h|%h|%h", $time, cpu3_pc_op, cpu3_rom_op_data, cpu3_pc_op1, cpu3_rom_op1_data, core3.acc, core3.b_reg, core3.r_regs[2], core3.r_regs[3], core3.r_regs[4], core3.r_regs[8], core3.flag_carry, core3.flag_zero, core3.pin_dir, core3.pin_out, 8'h0);
+        end
+    end
 endmodule
