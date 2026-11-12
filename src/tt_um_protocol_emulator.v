@@ -98,7 +98,7 @@ module tt_um_protocol_emulator (
     reg [7:0] shared_reg_2; reg shared_reg_2_valid;
     reg [7:0] shared_reg_3; reg shared_reg_3_valid;
 
-    always @(posedge clk) begin
+    always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             shared_reg_0 <= 0; shared_reg_0_valid <= 0;
             shared_reg_1 <= 0; shared_reg_1_valid <= 0;
@@ -284,8 +284,6 @@ module tt_um_protocol_emulator (
     fifo tx1 (.clk(clk), .rst_n(rst_n), .wdata(cpu1_mem_wdata), .we(cpu1_tx_we),
               .rdata(cpu1_tx_fifo_rdata), .re(cpu1_tx_fifo_re), .empty(cpu1_tx_fifo_empty), .full(cpu1_tx_full));
 
-    always @(posedge clk) begin
-    end
 
     wire [7:0] cpu1_timer_rdata; wire cpu1_timer_zero;
     wire cpu1_timer_we_l = (cpu1_mem_addr == 4'h7) && cpu1_mem_we;

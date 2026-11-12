@@ -163,7 +163,6 @@ module spi_slave (
             cpu3_tx_fifo_re <= 0;
             
             if (spi_cs) begin
-                if (!is_cmd_phase) $display("[%0t] spi_cs went HIGH! Resetting state.", $time);
                 is_cmd_phase <= 1;
                 bit_cnt <= 0;
                 is_jmp_low <= 0;
@@ -172,12 +171,10 @@ module spi_slave (
                 if (sclk_rise) begin
                     shift_reg <= {shift_reg[6:0], spi_mosi};
                     bit_cnt <= bit_cnt + 1;
-                    $display("[%0t] sclk_rise! bit_cnt=%d, mosi=%b", $time, bit_cnt, spi_mosi);
                     
                     if (bit_cnt == 7) begin
                         if (is_cmd_phase) begin
                             cmd_byte <= {shift_reg[6:0], spi_mosi};
-                            $display("[%0t] SPI CMD RECEIVED: %h", $time, {shift_reg[6:0], spi_mosi});
                             is_cmd_phase <= 0;
                             is_jmp_low <= 0;
                             // Reset pointers
@@ -228,7 +225,6 @@ module spi_slave (
                                     end
                                 end
                                 8'h02: begin // RX FIFO CPU0
-                                    $display("[%0t] SPI WRITING TO CPU0 RX FIFO: %h", $time, {shift_reg[6:0], spi_mosi});
                                     cpu0_rx_fifo_wdata <= {shift_reg[6:0], spi_mosi};
                                     cpu0_rx_fifo_we <= 1;
                                 end
@@ -323,8 +319,7 @@ module spi_slave (
                                     cpu3_rx_fifo_we <= 1;
                                 end
                                 default: begin
-                                    if (cmd_byte != 8'h04 && cmd_byte != 8'h05 && cmd_byte != 8'h0C && cmd_byte != 8'h0D)
-                                        $display("[%0t] SPI UNKNOWN DATA! cmd_byte=%h data=%h", $time, cmd_byte, {shift_reg[6:0], spi_mosi});
+                                    /* Unknown command */
                                 end
                             endcase
                         end

@@ -120,6 +120,9 @@ module cpu_core (
                         else if (rom_op1_data == 4'hF) pin_dir <= acc[3:0];
                     end
                 end
+                default: begin
+                    /* JMP ops handled in PC Increment Logic */
+                end
             endcase
 
             // PC Increment Logic
