@@ -35,9 +35,8 @@ module decoder (
     assign is_jump      = (opcode >= 4'hD);
     
     // Memory / Immediate Ops
-    assign is_mem_load  = (opcode == 4'hC);
-    assign is_mem_store = (opcode == 4'hB); // Wait, spec says: B=LOADI? No, B=STORE? Let's check spec.
-    // Actually, I will explicitly decode everything in cpu_core.v switch statement,
-    // this module is mostly for the state machine length controller.
+    assign is_mem_load  = (opcode == 4'hB);
+    assign is_mem_store = (opcode == 4'hC);
+    assign is_pin_set   = (opcode == 4'h8) || (opcode == 4'h9);
 
 endmodule

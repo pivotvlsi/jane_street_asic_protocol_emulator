@@ -81,9 +81,7 @@ module spi_slave (
     output reg        cpu3_rx_fifo_we,
     input  wire [7:0] cpu3_tx_fifo_rdata,
     output reg        cpu3_tx_fifo_re,
-    input  wire       cpu3_tx_fifo_empty,
-    // Dummy wire to fix trailing comma
-    output wire dummy
+    input  wire       cpu3_tx_fifo_empty
 );
 
     // SPI SCLK Edge Detection
