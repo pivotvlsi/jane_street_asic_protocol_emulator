@@ -35,7 +35,8 @@ module cpu_core (
     input  wire       mem_stall, // High when FIFO empty/full or Timer blocking
     
     // Special internal status flags mapped to address 0x8
-    input  wire [3:0] shared_valid
+    input  wire [3:0] shared_valid,
+    input  wire       overrun_flag
 );
 
     // Internal Registers
@@ -105,7 +106,7 @@ module cpu_core (
                     if (is_internal_reg(rom_op1_data)) begin
                         if (rom_op1_data == 4'h0) begin acc <= acc; flag_zero <= (acc == 0); end
                         else if (rom_op1_data == 4'h1) begin acc <= b_reg; flag_zero <= (b_reg == 0); end
-                        else if (rom_op1_data == 4'h8) begin acc <= {2'b0, shared_valid, flag_carry, flag_zero}; flag_zero <= ({2'b0, shared_valid, flag_carry, flag_zero} == 0); end
+                        else if (rom_op1_data == 4'h8) begin acc <= {1'b0, overrun_flag, shared_valid, flag_carry, flag_zero}; flag_zero <= ({1'b0, overrun_flag, shared_valid, flag_carry, flag_zero} == 0); end
                         else if (rom_op1_data == 4'hF) begin acc <= {pin_state, pin_dir}; flag_zero <= ({pin_state, pin_dir} == 0); end
                         else begin acc <= r_regs[rom_op1_data]; flag_zero <= (r_regs[rom_op1_data] == 0); end
                     end else begin

@@ -218,6 +218,13 @@ module top (
         (cpu0_mem_re && cpu0_mem_addr == 4'hC && !shared_reg_3_valid) ||
         (cpu0_mem_we && cpu0_mem_addr == 4'h4 && cpu0_tx_full);
 
+    reg cpu0_tx_overrun;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) cpu0_tx_overrun <= 1'b0;
+        else if (cpu0_mem_we && cpu0_mem_addr == 4'h4 && cpu0_tx_full) cpu0_tx_overrun <= 1'b1;
+        else if (cpu0_mem_re && cpu0_mem_addr == 4'h8) cpu0_tx_overrun <= 1'b0;
+    end
+
     cpu_core core0 (
         .clk(clk), .rst_n(rst_n), .run(cpu0_run),
         .pin_state(uio_in[3:0]), .pin_out(cpu0_pin_out), .pin_dir(cpu0_pin_dir),
@@ -227,7 +234,8 @@ module top (
         .jmp_table_addr(cpu0_jmp_addr), .jmp_table_data(cpu0_jmp_data),
         .mem_addr(cpu0_mem_addr), .mem_wdata(cpu0_mem_wdata), .mem_we(cpu0_mem_we), .mem_re(cpu0_mem_re),
         .mem_rdata(cpu0_mem_rdata), .mem_stall(cpu0_mem_stall),
-        .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid})
+        .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
+        .overrun_flag(cpu0_tx_overrun)
     );
     
     always @(posedge clk) begin
@@ -310,6 +318,13 @@ module top (
         (cpu1_mem_re && cpu1_mem_addr == 4'hC && !shared_reg_3_valid) ||
         (cpu1_mem_we && cpu1_mem_addr == 4'h4 && cpu1_tx_full);
 
+    reg cpu1_tx_overrun;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) cpu1_tx_overrun <= 1'b0;
+        else if (cpu1_mem_we && cpu1_mem_addr == 4'h4 && cpu1_tx_full) cpu1_tx_overrun <= 1'b1;
+        else if (cpu1_mem_re && cpu1_mem_addr == 4'h8) cpu1_tx_overrun <= 1'b0;
+    end
+
     cpu_core core1 (
         .clk(clk), .rst_n(rst_n), .run(cpu1_run),
         .pin_state(uio_in[3:0]), .pin_out(cpu1_pin_out), .pin_dir(cpu1_pin_dir),
@@ -319,7 +334,8 @@ module top (
         .jmp_table_addr(cpu1_jmp_addr), .jmp_table_data(cpu1_jmp_data),
         .mem_addr(cpu1_mem_addr), .mem_wdata(cpu1_mem_wdata), .mem_we(cpu1_mem_we), .mem_re(cpu1_mem_re),
         .mem_rdata(cpu1_mem_rdata), .mem_stall(cpu1_mem_stall),
-        .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid})
+        .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
+        .overrun_flag(cpu1_tx_overrun)
     );
 
     always @(posedge clk) begin
@@ -398,6 +414,13 @@ module top (
         (cpu2_mem_re && cpu2_mem_addr == 4'hC && !shared_reg_3_valid) ||
         (cpu2_mem_we && cpu2_mem_addr == 4'h4 && cpu2_tx_full);
 
+    reg cpu2_tx_overrun;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) cpu2_tx_overrun <= 1'b0;
+        else if (cpu2_mem_we && cpu2_mem_addr == 4'h4 && cpu2_tx_full) cpu2_tx_overrun <= 1'b1;
+        else if (cpu2_mem_re && cpu2_mem_addr == 4'h8) cpu2_tx_overrun <= 1'b0;
+    end
+
     cpu_core core2 (
         .clk(clk), .rst_n(rst_n), .run(cpu2_run),
         .pin_state(ui_in[3:0]), .pin_out(cpu2_pin_out), .pin_dir(cpu2_pin_dir),
@@ -407,7 +430,8 @@ module top (
         .jmp_table_addr(cpu2_jmp_addr), .jmp_table_data(cpu2_jmp_data),
         .mem_addr(cpu2_mem_addr), .mem_wdata(cpu2_mem_wdata), .mem_we(cpu2_mem_we), .mem_re(cpu2_mem_re),
         .mem_rdata(cpu2_mem_rdata), .mem_stall(cpu2_mem_stall),
-        .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid})
+        .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
+        .overrun_flag(cpu2_tx_overrun)
     );
 
     always @(posedge clk) begin
@@ -486,6 +510,13 @@ module top (
         (cpu3_mem_re && cpu3_mem_addr == 4'hC && !shared_reg_3_valid) ||
         (cpu3_mem_we && cpu3_mem_addr == 4'h4 && cpu3_tx_full);
 
+    reg cpu3_tx_overrun;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) cpu3_tx_overrun <= 1'b0;
+        else if (cpu3_mem_we && cpu3_mem_addr == 4'h4 && cpu3_tx_full) cpu3_tx_overrun <= 1'b1;
+        else if (cpu3_mem_re && cpu3_mem_addr == 4'h8) cpu3_tx_overrun <= 1'b0;
+    end
+
     cpu_core core3 (
         .clk(clk), .rst_n(rst_n), .run(cpu3_run),
         .pin_state(ui_in[7:4]), .pin_out(cpu3_pin_out), .pin_dir(cpu3_pin_dir),
@@ -495,7 +526,8 @@ module top (
         .jmp_table_addr(cpu3_jmp_addr), .jmp_table_data(cpu3_jmp_data),
         .mem_addr(cpu3_mem_addr), .mem_wdata(cpu3_mem_wdata), .mem_we(cpu3_mem_we), .mem_re(cpu3_mem_re),
         .mem_rdata(cpu3_mem_rdata), .mem_stall(cpu3_mem_stall),
-        .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid})
+        .shared_valid({shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
+        .overrun_flag(cpu3_tx_overrun)
     );
 
 

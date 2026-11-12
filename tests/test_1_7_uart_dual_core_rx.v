@@ -37,8 +37,8 @@ module uart_concurrent;
         reg [8*150-1:0] op_file, op1_file, op2_file, jmp_file;
         reg [3:0] exp_op [0:127];
         reg [3:0] exp_op1 [0:63];
-        reg [3:0] exp_op2 [0:7];
-        reg [14:0] exp_jmp [0:15];
+        reg [3:0] exp_op2 [0:15];
+        reg [16:0] exp_jmp [0:15];
         integer i, fail_cnt;
         begin
             op_file = {base_file, "_op.hex"};
@@ -48,8 +48,8 @@ module uart_concurrent;
             
             for (i=0; i<128; i=i+1) exp_op[i] = 4'hx;
             for (i=0; i<64; i=i+1) exp_op1[i] = 4'hx;
-            for (i=0; i<8; i=i+1) exp_op2[i] = 4'hx;
-            for (i=0; i<16; i=i+1) exp_jmp[i] = 15'hx;
+            for (i=0; i<16; i=i+1) exp_op2[i] = 4'hx;
+            for (i=0; i<16; i=i+1) exp_jmp[i] = 17'hx;
             $readmemh(op_file, exp_op);
             $readmemh(op1_file, exp_op1);
             $readmemh(op2_file, exp_op2);
@@ -82,23 +82,23 @@ module uart_concurrent;
             if (cmd == 8'h00) begin
                 for (i=0; i<128; i=i+1) if (exp_op[i] !== 4'hx && dut.cpu0_rom_op[i] !== exp_op[i]) begin $display("ASSERTION FAILED: CPU0 OP[%0d] expected %h got %h", i, exp_op[i], dut.cpu0_rom_op[i]); fail_cnt = fail_cnt + 1; end
                 for (i=0; i<64; i=i+1) if (exp_op1[i] !== 4'hx && dut.cpu0_rom_op1[i] !== exp_op1[i]) begin $display("ASSERTION FAILED: CPU0 OP1[%0d] expected %h got %h", i, exp_op1[i], dut.cpu0_rom_op1[i]); fail_cnt = fail_cnt + 1; end
-                for (i=0; i<8; i=i+1) if (exp_op2[i] !== 4'hx && dut.cpu0_rom_op2[i] !== exp_op2[i]) begin $display("ASSERTION FAILED: CPU0 OP2[%0d] expected %h got %h", i, exp_op2[i], dut.cpu0_rom_op2[i]); fail_cnt = fail_cnt + 1; end
-                for (i=0; i<16; i=i+1) if (exp_jmp[i] !== 15'hx && dut.cpu0_jmp_table[i] !== exp_jmp[i]) begin $display("ASSERTION FAILED: CPU0 JMP[%0d] expected %h got %h", i, exp_jmp[i], dut.cpu0_jmp_table[i]); fail_cnt = fail_cnt + 1; end
+                for (i=0; i<16; i=i+1) if (exp_op2[i] !== 4'hx && dut.cpu0_rom_op2[i] !== exp_op2[i]) begin $display("ASSERTION FAILED: CPU0 OP2[%0d] expected %h got %h", i, exp_op2[i], dut.cpu0_rom_op2[i]); fail_cnt = fail_cnt + 1; end
+                for (i=0; i<16; i=i+1) if (exp_jmp[i] !== 17'hx && dut.cpu0_jmp_table[i] !== exp_jmp[i]) begin $display("ASSERTION FAILED: CPU0 JMP[%0d] expected %h got %h", i, exp_jmp[i], dut.cpu0_jmp_table[i]); fail_cnt = fail_cnt + 1; end
             end else if (cmd == 8'h01) begin
                 for (i=0; i<128; i=i+1) if (exp_op[i] !== 4'hx && dut.cpu1_rom_op[i] !== exp_op[i]) begin $display("ASSERTION FAILED: CPU1 OP[%0d] expected %h got %h", i, exp_op[i], dut.cpu1_rom_op[i]); fail_cnt = fail_cnt + 1; end
                 for (i=0; i<64; i=i+1) if (exp_op1[i] !== 4'hx && dut.cpu1_rom_op1[i] !== exp_op1[i]) begin $display("ASSERTION FAILED: CPU1 OP1[%0d] expected %h got %h", i, exp_op1[i], dut.cpu1_rom_op1[i]); fail_cnt = fail_cnt + 1; end
-                for (i=0; i<8; i=i+1) if (exp_op2[i] !== 4'hx && dut.cpu1_rom_op2[i] !== exp_op2[i]) begin $display("ASSERTION FAILED: CPU1 OP2[%0d] expected %h got %h", i, exp_op2[i], dut.cpu1_rom_op2[i]); fail_cnt = fail_cnt + 1; end
-                for (i=0; i<16; i=i+1) if (exp_jmp[i] !== 15'hx && dut.cpu1_jmp_table[i] !== exp_jmp[i]) begin $display("ASSERTION FAILED: CPU1 JMP[%0d] expected %h got %h", i, exp_jmp[i], dut.cpu1_jmp_table[i]); fail_cnt = fail_cnt + 1; end
+                for (i=0; i<16; i=i+1) if (exp_op2[i] !== 4'hx && dut.cpu1_rom_op2[i] !== exp_op2[i]) begin $display("ASSERTION FAILED: CPU1 OP2[%0d] expected %h got %h", i, exp_op2[i], dut.cpu1_rom_op2[i]); fail_cnt = fail_cnt + 1; end
+                for (i=0; i<16; i=i+1) if (exp_jmp[i] !== 17'hx && dut.cpu1_jmp_table[i] !== exp_jmp[i]) begin $display("ASSERTION FAILED: CPU1 JMP[%0d] expected %h got %h", i, exp_jmp[i], dut.cpu1_jmp_table[i]); fail_cnt = fail_cnt + 1; end
             end else if (cmd == 8'h08) begin
                 for (i=0; i<128; i=i+1) if (exp_op[i] !== 4'hx && dut.cpu2_rom_op[i] !== exp_op[i]) begin $display("ASSERTION FAILED: CPU2 OP[%0d] expected %h got %h", i, exp_op[i], dut.cpu2_rom_op[i]); fail_cnt = fail_cnt + 1; end
                 for (i=0; i<64; i=i+1) if (exp_op1[i] !== 4'hx && dut.cpu2_rom_op1[i] !== exp_op1[i]) begin $display("ASSERTION FAILED: CPU2 OP1[%0d] expected %h got %h", i, exp_op1[i], dut.cpu2_rom_op1[i]); fail_cnt = fail_cnt + 1; end
-                for (i=0; i<8; i=i+1) if (exp_op2[i] !== 4'hx && dut.cpu2_rom_op2[i] !== exp_op2[i]) begin $display("ASSERTION FAILED: CPU2 OP2[%0d] expected %h got %h", i, exp_op2[i], dut.cpu2_rom_op2[i]); fail_cnt = fail_cnt + 1; end
-                for (i=0; i<16; i=i+1) if (exp_jmp[i] !== 15'hx && dut.cpu2_jmp_table[i] !== exp_jmp[i]) begin $display("ASSERTION FAILED: CPU2 JMP[%0d] expected %h got %h", i, exp_jmp[i], dut.cpu2_jmp_table[i]); fail_cnt = fail_cnt + 1; end
+                for (i=0; i<16; i=i+1) if (exp_op2[i] !== 4'hx && dut.cpu2_rom_op2[i] !== exp_op2[i]) begin $display("ASSERTION FAILED: CPU2 OP2[%0d] expected %h got %h", i, exp_op2[i], dut.cpu2_rom_op2[i]); fail_cnt = fail_cnt + 1; end
+                for (i=0; i<16; i=i+1) if (exp_jmp[i] !== 17'hx && dut.cpu2_jmp_table[i] !== exp_jmp[i]) begin $display("ASSERTION FAILED: CPU2 JMP[%0d] expected %h got %h", i, exp_jmp[i], dut.cpu2_jmp_table[i]); fail_cnt = fail_cnt + 1; end
             end else if (cmd == 8'h09) begin
                 for (i=0; i<128; i=i+1) if (exp_op[i] !== 4'hx && dut.cpu3_rom_op[i] !== exp_op[i]) begin $display("ASSERTION FAILED: CPU3 OP[%0d] expected %h got %h", i, exp_op[i], dut.cpu3_rom_op[i]); fail_cnt = fail_cnt + 1; end
                 for (i=0; i<64; i=i+1) if (exp_op1[i] !== 4'hx && dut.cpu3_rom_op1[i] !== exp_op1[i]) begin $display("ASSERTION FAILED: CPU3 OP1[%0d] expected %h got %h", i, exp_op1[i], dut.cpu3_rom_op1[i]); fail_cnt = fail_cnt + 1; end
-                for (i=0; i<8; i=i+1) if (exp_op2[i] !== 4'hx && dut.cpu3_rom_op2[i] !== exp_op2[i]) begin $display("ASSERTION FAILED: CPU3 OP2[%0d] expected %h got %h", i, exp_op2[i], dut.cpu3_rom_op2[i]); fail_cnt = fail_cnt + 1; end
-                for (i=0; i<16; i=i+1) if (exp_jmp[i] !== 15'hx && dut.cpu3_jmp_table[i] !== exp_jmp[i]) begin $display("ASSERTION FAILED: CPU3 JMP[%0d] expected %h got %h", i, exp_jmp[i], dut.cpu3_jmp_table[i]); fail_cnt = fail_cnt + 1; end
+                for (i=0; i<16; i=i+1) if (exp_op2[i] !== 4'hx && dut.cpu3_rom_op2[i] !== exp_op2[i]) begin $display("ASSERTION FAILED: CPU3 OP2[%0d] expected %h got %h", i, exp_op2[i], dut.cpu3_rom_op2[i]); fail_cnt = fail_cnt + 1; end
+                for (i=0; i<16; i=i+1) if (exp_jmp[i] !== 17'hx && dut.cpu3_jmp_table[i] !== exp_jmp[i]) begin $display("ASSERTION FAILED: CPU3 JMP[%0d] expected %h got %h", i, exp_jmp[i], dut.cpu3_jmp_table[i]); fail_cnt = fail_cnt + 1; end
             end
 
             if (fail_cnt > 0) begin

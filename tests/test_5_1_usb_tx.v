@@ -10,7 +10,7 @@ module test_5_1_usb_tx;
     wire [7:0] uio_out;
     wire [7:0] uio_oe;
 
-    tt_um_protocol_emulator dut (
+    top dut (
         .ui_in(ui_in),
         .uo_out(uo_out),
         .uio_in(uio_in),

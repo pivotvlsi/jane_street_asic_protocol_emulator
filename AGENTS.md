@@ -1,0 +1,2 @@
+- Keep all the variable, class, struct and function names in sanskrit in devanagari script
+- Donot commit or push without explicit instruction
