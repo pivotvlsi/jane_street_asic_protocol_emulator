@@ -13,11 +13,17 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Test create-user-config debug
+      - name: Run debug script and save log
         run: |
           pip install -r https://raw.githubusercontent.com/TinyTapeout/tt-support-tools/main/requirements.txt
           git clone https://github.com/TinyTapeout/tt-support-tools.git tt
-          python ./tt/tt_tool.py --create-user-config --pdk ihp-sg13cmos5l
+          python ./tt/tt_tool.py --create-user-config --pdk ihp-sg13cmos5l 2>&1 | tee debug_output.txt || true
+
+      - name: Upload debug output
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-output
+          path: debug_output.txt
 
       - name: Build GDS
         uses: TinyTapeout/tt-gds-action@ttihp27a
