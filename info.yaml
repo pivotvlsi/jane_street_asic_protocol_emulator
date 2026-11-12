@@ -10,7 +10,7 @@ project:
   clock_hz:     100000000
 
   # How many tiles your design occupies? A single tile is about 160x100 uM.
-  tiles: "2x2"          # Up to 8x4 permitted for Jane Street competition
+  tiles: "8x4"          # Up to 8x4 permitted for Jane Street competition
 
   # Your top module name must start with "tt_um_".
   top_module:  "tt_um_protocol_emulator"
