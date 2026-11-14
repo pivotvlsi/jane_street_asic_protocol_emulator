@@ -2,7 +2,7 @@
 `timescale 1ns/1ps
 
 // ============================================================================
-// द्वितन्त्री_शोधन (Two-Wire Debug Controller)
+// dvitantri_shodhana (Two-Wire Debug Controller)
 // Host Debugger (RP2040) controls execution, halts cores, and inspects registers
 // ============================================================================
 
@@ -10,50 +10,50 @@ module dvitantri_shodhana (
     input  wire        clk,
     input  wire        rst_n,
 
-    // द्वितन्त्री पिन् (Two-wire Debug Physical Pins)
-    input  wire        \शोधन_घटिका , // Debug Serial Clock (dbg_sclk)
-    input  wire        \शोधन_निवेश ,  // Debug Serial Data In (dbg_mosi/din)
-    output reg         \शोधन_निर्गम , // Debug Serial Data Out (dbg_miso/dout)
+    // Physical Debug Pins
+    input  wire        shodhana_ghatika,   // Debug Serial Clock (dbg_sclk)
+    input  wire        shodhana_nivesha,   // Debug Serial Data In (dbg_mosi/din)
+    output reg         shodhana_nirgama,   // Debug Serial Data Out (dbg_miso/dout)
 
-    // ६ संसाधकाः विराम-संकेताः (Halt control to 6 cores)
-    output reg  [5:0]  \विराम_संकेत , // dbg_halt to core 0..5
+    // Halt control to 6 cores
+    output reg  [5:0]  virama_sanketa,     // dbg_halt to core 0..5
 
-    // संसाधक चयन एवं पञ्जिका पठन (Core select & Register readout multiplexer)
-    output reg  [2:0]  \संसाधक_क्रमांक , // Target Core ID (0..5)
-    output reg  [3:0]  \पञ्जिका_संकेत ,   // Target Register Address (0..15)
+    // Core select & Register readout multiplexer
+    output reg  [2:0]  sansadhaka_kramanka,// Target Core ID (0..5)
+    output reg  [3:0]  panjika_sanketa,    // Target Register Address (0..15)
     
     // Core Readout Data Inputs from Cores (Direct inspection bus)
-    input  wire [7:0]  \सञ्चायक_दत्त ,   // ACC data
-    input  wire [7:0]  \सहायक_दत्त ,     // B reg data
-    input  wire [7:0]  \ध्वज_दत्त ,       // STATUS_FLAGS data
-    input  wire [6:0]  \गणक_संकेत_० ,   // PC_OP (7-bit)
-    input  wire [5:0]  \गणक_संकेत_१ ,   // PC_OP1 (6-bit)
-    input  wire [3:0]  \गणक_संकेत_२ ,   // PC_OP2 (4-bit)
-    input  wire [7:0]  \सामान्य_पञ्जिका , // General register R[addr]
-    input  wire [7:0]  \पिन्_दिश_दत्त ,   // Pin direction register (pin_dir)
-    input  wire [7:0]  \पिन्_निर्गम_दत्त   // Pin output register (pin_out)
+    input  wire [7:0]  sanchayaka_datta,   // ACC data
+    input  wire [7:0]  sahayaka_datta,     // B reg data
+    input  wire [7:0]  dhvaja_datta,       // STATUS_FLAGS data
+    input  wire [6:0]  ganaka_sanketa_0,   // PC_OP (7-bit)
+    input  wire [5:0]  ganaka_sanketa_1,   // PC_OP1 (6-bit)
+    input  wire [3:0]  ganaka_sanketa_2,   // PC_OP2 (4-bit)
+    input  wire [7:0]  samanya_panjika,    // General register R[addr]
+    input  wire [7:0]  pin_disha_datta,    // Pin direction register (pin_dir)
+    input  wire [7:0]  pin_nirgama_datta   // Pin output register (pin_out)
 );
 
     // Synchronizers for debug clock & data
-    reg \घटिका_समकालिक_१ , \घटिका_समकालिक_२ ;
-    reg \निवेश_समकालिक_१ , \निवेश_समकालिक_२ ;
+    reg ghatika_samakalika_1, ghatika_samakalika_2;
+    reg nivesha_samakalika_1, nivesha_samakalika_2;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            \घटिका_समकालिक_१ <= 1'b0;
-            \घटिका_समकालिक_२ <= 1'b0;
-            \निवेश_समकालिक_१ <= 1'b0;
-            \निवेश_समकालिक_२ <= 1'b0;
+            ghatika_samakalika_1 <= 1'b0;
+            ghatika_samakalika_2 <= 1'b0;
+            nivesha_samakalika_1 <= 1'b0;
+            nivesha_samakalika_2 <= 1'b0;
         end else begin
-            \घटिका_समकालिक_१ <= \शोधन_घटिका ;
-            \घटिका_समकालिक_२ <= \घटिका_समकालिक_१ ;
-            \निवेश_समकालिक_१ <= \शोधन_निवेश ;
-            \निवेश_समकालिक_२ <= \निवेश_समकालिक_१ ;
+            ghatika_samakalika_1 <= shodhana_ghatika;
+            ghatika_samakalika_2 <= ghatika_samakalika_1;
+            nivesha_samakalika_1 <= shodhana_nivesha;
+            nivesha_samakalika_2 <= nivesha_samakalika_1;
         end
     end
 
-    wire \घटिका_आरोह = (\घटिका_समकालिक_१ && !\घटिका_समकालिक_२ );
-    wire \घटिका_अवरोह = (!\घटिका_समकालिक_१ && \घटिका_समकालिक_२ );
+    wire ghatika_aroha  = (ghatika_samakalika_1 && !ghatika_samakalika_2);
+    wire ghatika_avaroha = (!ghatika_samakalika_1 && ghatika_samakalika_2);
 
     // Internal State Machine
     // Command format: 16-bit shift frame:
@@ -61,26 +61,26 @@ module dvitantri_shodhana (
     // [13:11] : Core ID (0 to 5)
     // [10:7]  : Register Address / Sub-command
     // [6:0]   : Control Mask / Argument
-    reg [15:0] \आदेश_पञ्जिका ;
-    reg [4:0]  \गणन_अंक ;
-    reg [15:0] \निर्गम_पञ्जिका ;
+    reg [15:0] adesha_panjika;
+    reg [4:0]  ganana_anka;
+    reg [15:0] nirgama_panjika;
 
     // Multiplex selected register to readout bus
-    reg [15:0] \शोधन_परिणाम ;
+    reg [15:0] shodhana_parinama;
     always @(*) begin
-        case (\पञ्जिका_संकेत )
-            4'h0: \शोधन_परिणाम = {8'h00, \सञ्चायक_दत्त };
-            4'h1: \शोधन_परिणाम = {8'h00, \सहायक_दत्त };
-            4'h8: \शोधन_परिणाम = {8'h00, \ध्वज_दत्त };
-            4'hE: \शोधन_परिणाम = {8'h00, \पिन्_दिश_दत्त };
-            4'hF: \शोधन_परिणाम = {8'h00, \पिन्_निर्गम_दत्त };
+        case (panjika_sanketa)
+            4'h0: shodhana_parinama = {8'h00, sanchayaka_datta};
+            4'h1: shodhana_parinama = {8'h00, sahayaka_datta};
+            4'h8: shodhana_parinama = {8'h00, dhvaja_datta};
+            4'hE: shodhana_parinama = {8'h00, pin_disha_datta};
+            4'hF: shodhana_parinama = {8'h00, pin_nirgama_datta};
             default: begin
                 // Read general register or PC
-                if (\आदेश_पञ्जिका [15:14] == 2'b11) begin
+                if (adesha_panjika[15:14] == 2'b11) begin
                     // Read PC: {pc_op[6:0], pc_op1[5:0], pc_op2[3:0]} -> 17 bits packed in 16
-                    \शोधन_परिणाम = {\गणक_संकेत_० [5:0], \गणक_संकेत_१ [5:0], \गणक_संकेत_२ [3:0]};
+                    shodhana_parinama = {ganaka_sanketa_0[5:0], ganaka_sanketa_1[5:0], ganaka_sanketa_2[3:0]};
                 end else begin
-                    \शोधन_परिणाम = {8'h00, \सामान्य_पञ्जिका };
+                    shodhana_parinama = {8'h00, samanya_panjika};
                 end
             end
         endcase
@@ -88,50 +88,50 @@ module dvitantri_shodhana (
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            \विराम_संकेत     <= 6'b000000;
-            \संसाधक_क्रमांक  <= 3'b000;
-            \पञ्जिका_संकेत   <= 4'h0;
-            \आदेश_पञ्जिका    <= 16'h0000;
-            \निर्गम_पञ्जिका  <= 16'h0000;
-            \गणन_अंक        <= 5'd0;
-            \शोधन_निर्गम    <= 1'b0;
+            virama_sanketa      <= 6'b000000;
+            sansadhaka_kramanka <= 3'b000;
+            panjika_sanketa    <= 4'h0;
+            adesha_panjika     <= 16'h0000;
+            nirgama_panjika    <= 16'h0000;
+            ganana_anka        <= 5'd0;
+            shodhana_nirgama   <= 1'b0;
         end else begin
-            if (\घटिका_आरोह ) begin
+            if (ghatika_aroha) begin
                 // Shift in MSB first
-                \आदेश_पञ्जिका <= {\आदेश_पञ्जिका [14:0], \निवेश_समकालिक_२ };
-                \गणन_अंक <= \गणन_अंक + 1;
+                adesha_panjika <= {adesha_panjika[14:0], nivesha_samakalika_2};
+                ganana_anka <= ganana_anka + 1;
 
-                if (\गणन_अंक == 5'd15) begin
-                    \गणन_अंक <= 5'd0;
+                if (ganana_anka == 5'd15) begin
+                    ganana_anka <= 5'd0;
                     // Command Dispatch
-                    case ({\आदेश_पञ्जिका [14:13]})
+                    case ({adesha_panjika[14:13]})
                         2'b01: begin
                             // Halt / Resume Command: [12:10] = Core ID, [6] = 1 (Halt), 0 (Resume)
-                            if (\आदेश_पञ्जिका [12:10] <= 3'd5) begin
-                                \विराम_संकेत [\आदेश_पञ्जिका [12:10]] <= \निवेश_समकालिक_२ ;
+                            if (adesha_panjika[12:10] <= 3'd5) begin
+                                virama_sanketa[adesha_panjika[12:10]] <= nivesha_samakalika_2;
                             end
-                            \निर्गम_पञ्जिका <= {10'h0, \विराम_संकेत };
+                            nirgama_panjika <= {10'h0, virama_sanketa};
                         end
                         2'b10: begin
                             // Read Register Command
-                            \संसाधक_क्रमांक <= \आदेश_पञ्जिका [12:10];
-                            \पञ्जिका_संकेत  <= \आदेश_पञ्जिका [9:6];
-                            \निर्गम_पञ्जिका  <= \शोधन_परिणाम ;
+                            sansadhaka_kramanka <= adesha_panjika[12:10];
+                            panjika_sanketa     <= adesha_panjika[9:6];
+                            nirgama_panjika     <= shodhana_parinama;
                         end
                         2'b11: begin
                             // Read PC Command
-                            \संसाधक_क्रमांक <= \आदेश_पञ्जिका [12:10];
-                            \निर्गम_पञ्जिका  <= {\गणक_संकेत_० [5:0], \गणक_संकेत_१ [5:0], \गणक_संकेत_२ [3:0]};
+                            sansadhaka_kramanka <= adesha_panjika[12:10];
+                            nirgama_panjika     <= {ganaka_sanketa_0[5:0], ganaka_sanketa_1[5:0], ganaka_sanketa_2[3:0]};
                         end
                         default: begin
-                            \निर्गम_पञ्जिका <= 16'hAAAA; // Echo / NOP response
+                            nirgama_panjika <= 16'hAAAA; // Echo / NOP response
                         end
                     endcase
                 end
-            end else if (\घटिका_अवरोह ) begin
+            end else if (ghatika_avaroha) begin
                 // Shift out on falling edge
-                \शोधन_निर्गम   <= \निर्गम_पञ्जिका [15];
-                \निर्गम_पञ्जिका <= {\निर्गम_पञ्जिका [14:0], 1'b0};
+                shodhana_nirgama <= nirgama_panjika[15];
+                nirgama_panjika  <= {nirgama_panjika[14:0], 1'b0};
             end
         end
     end

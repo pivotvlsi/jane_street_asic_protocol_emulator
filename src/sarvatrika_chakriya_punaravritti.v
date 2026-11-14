@@ -2,70 +2,70 @@
 `timescale 1ns/1ps
 
 // ============================================================================
-// सार्वत्रिक चक्रीय पुनरावृत्ति तपासक (Universal Configurable CRC Hardware Engine)
+// sarvatrika_chakriya_punaravritti (Universal Configurable CRC Hardware Engine)
 // Supports ANY polynomial (CRC-5, CRC-7, CRC-8, CRC-12, CRC-16, CRC-32, etc.)
 // Configured via SPI Host Preload commands.
-// All variable, class, struct, and function names in Sanskrit Devanagari script.
+// All variable, class, struct, and function names in Sanskrit transliteration.
 // ============================================================================
 
-module \सार्वत्रिक_चक्रीय_पुनरावृत्ति  #(
-    parameter \अधिकतम_विस्तार  = 32
+module sarvatrika_chakriya_punaravritti #(
+    parameter adhikatama_vistara = 32
 )(
     input  wire        clk,
     input  wire        rst_n,
 
     // SPI Host Preload Configuration Interface
-    input  wire        \विन्यास_लेखन_संकेत ,
-    input  wire [3:0]  \विन्यास_पञ्जिका_संकेत ,
-    input  wire [7:0]  \विन्यास_दत्त_निवेश ,
+    input  wire        vinyasa_lekhana_sanketa,
+    input  wire [3:0]  vinyasa_panjika_sanketa,
+    input  wire [7:0]  vinyasa_datta_nivesha,
 
     // Processor Execution Interface
-    input  wire [7:0]  \प्रविष्टि_दत्त_निवेश ,
-    input  wire        \प्रविष्टि_लेखन_संकेत ,
-    input  wire        \पुनःप्रारम्भ_आदेश ,
-    input  wire [1:0]  \निर्गम_भाग_संकेत ,
-    output reg  [7:0]  \निर्गम_शेष_दत्त 
+    input  wire [7:0]  pravishti_datta_nivesha,
+    input  wire        pravishti_lekhana_sanketa,
+    input  wire        punahprarambha_adesha,
+    input  wire [1:0]  nirgama_bhaga_sanketa,
+    output reg  [7:0]  nirgama_shesha_datta
 );
 
     // ------------------------------------------------------------------------
-    // १. विन्यास पञ्जिकाः
+    // 1. Vinyasa Panjika (Configuration Registers)
     // ------------------------------------------------------------------------
-    reg [4:0]  \विस्तार_पञ्जिका ;
-    reg [31:0] \भाजक_बहुपद_पञ्जिका ;
-    reg [31:0] \प्रारम्भिक_बीज_पञ्जिका ;
-    reg [31:0] \उत्क्रम_आवरण_पञ्जिका ;
-    reg        \प्रतिबिम्ब_निवेश_ध्वज ;
-    reg        \प्रतिबिम्ब_निर्गम_ध्वज ;
+    reg [4:0]  vistara_panjika;
+    reg [31:0] bhajaka_bahupada_panjika;
+    reg [31:0] prarambhika_beeja_panjika;
+    reg [31:0] utkrama_avarana_panjika;
+    reg        pratibimba_nivesha_dhvaja;
+    reg        pratibimba_nirgama_dhvaja;
 
-    reg [31:0] \चक्रीय_स्थिति_पञ्जिका ;
+    reg [31:0] chakriya_sthiti_panjika;
 
     // SPI Preload Configuration
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            \विस्तार_पञ्जिका          <= 5'd16;
-            \भाजक_बहुपद_पञ्जिका      <= 32'h00008005;
-            \प्रारम्भिक_बीज_पञ्जिका    <= 32'h0000FFFF;
-            \उत्क्रम_आवरण_पञ्जिका     <= 32'h00000000;
-            \प्रतिबिम्ब_निवेश_ध्वज     <= 1'b1;
-            \प्रतिबिम्ब_निर्गम_ध्वज    <= 1'b1;
-        end else if (\विन्यास_लेखन_संकेत ) begin
-            case (\विन्यास_पञ्जिका_संकेत )
-                4'h0: \विस्तार_पञ्जिका          <= \विन्यास_दत्त_निवेश [4:0];
-                4'h1: \भाजक_बहुपद_पञ्जिका [7:0]   <= \विन्यास_दत्त_निवेश ;
-                4'h2: \भाजक_बहुपद_पञ्जिका [15:8]  <= \विन्यास_दत्त_निवेश ;
-                4'h3: \भाजक_बहुपद_पञ्जिका [23:16] <= \विन्यास_दत्त_निवेश ;
-                4'h4: \भाजक_बहुपद_पञ्जिका [31:24] <= \विन्यास_दत्त_निवेश ;
-                4'h5: \प्रारम्भिक_बीज_पञ्जिका [7:0]   <= \विन्यास_दत्त_निवेश ;
-                4'h6: \प्रारम्भिक_बीज_पञ्जिका [15:8]  <= \विन्यास_दत्त_निवेश ;
-                4'h7: \प्रारम्भिक_बीज_पञ्जिका [23:16] <= \विन्यास_दत्त_निवेश ;
-                4'h8: \प्रारम्भिक_बीज_पञ्जिका [31:24] <= \विन्यास_दत्त_निवेश ;
-                4'h9: \उत्क्रम_आवरण_पञ्जिका [7:0]   <= \विन्यास_दत्त_निवेश ;
-                4'hA: \उत्क्रम_आवरण_पञ्जिका [15:8]  <= \विन्यास_दत्त_निवेश ;
-                4'hB: \उत्क्रम_आवरण_पञ्जिका [23:16] <= \विन्यास_दत्त_निवेश ;
-                4'hC: \उत्क्रम_आवरण_पञ्जिका [31:24] <= \विन्यास_दत्त_निवेश ;
+            vistara_panjika          <= 5'd16;
+            bhajaka_bahupada_panjika  <= 32'h00008005;
+            prarambhika_beeja_panjika<= 32'h0000FFFF;
+            utkrama_avarana_panjika  <= 32'h00000000;
+            pratibimba_nivesha_dhvaja <= 1'b1;
+            pratibimba_nirgama_dhvaja<= 1'b1;
+        end else if (vinyasa_lekhana_sanketa) begin
+            case (vinyasa_panjika_sanketa)
+                4'h0: vistara_panjika          <= vinyasa_datta_nivesha[4:0];
+                4'h1: bhajaka_bahupada_panjika[7:0]   <= vinyasa_datta_nivesha;
+                4'h2: bhajaka_bahupada_panjika[15:8]  <= vinyasa_datta_nivesha;
+                4'h3: bhajaka_bahupada_panjika[23:16] <= vinyasa_datta_nivesha;
+                4'h4: bhajaka_bahupada_panjika[31:24] <= vinyasa_datta_nivesha;
+                4'h5: prarambhika_beeja_panjika[7:0]   <= vinyasa_datta_nivesha;
+                4'h6: prarambhika_beeja_panjika[15:8]  <= vinyasa_datta_nivesha;
+                4'h7: prarambhika_beeja_panjika[23:16] <= vinyasa_datta_nivesha;
+                4'h8: prarambhika_beeja_panjika[31:24] <= vinyasa_datta_nivesha;
+                4'h9: utkrama_avarana_panjika[7:0]   <= vinyasa_datta_nivesha;
+                4'hA: utkrama_avarana_panjika[15:8]  <= vinyasa_datta_nivesha;
+                4'hB: utkrama_avarana_panjika[23:16] <= vinyasa_datta_nivesha;
+                4'hC: utkrama_avarana_panjika[31:24] <= vinyasa_datta_nivesha;
                 4'hD: begin
-                    \प्रतिबिम्ब_निवेश_ध्वज   <= \विन्यास_दत्त_निवेश [0];
-                    \प्रतिबिम्ब_निर्गम_ध्वज  <= \विन्यास_दत्त_निवेश [1];
+                    pratibimba_nivesha_dhvaja  <= vinyasa_datta_nivesha[0];
+                    pratibimba_nirgama_dhvaja <= vinyasa_datta_nivesha[1];
                 end
                 default: ;
             endcase
@@ -73,106 +73,106 @@ module \सार्वत्रिक_चक्रीय_पुनरावृ�
     end
 
     // ------------------------------------------------------------------------
-    // २. परावर्तित निवेश निर्धारण (Static Bit Reversal)
+    // 2. Paravartita Nivesha (Static Bit Reversal)
     // ------------------------------------------------------------------------
-    wire [7:0] \परावर्तित_निवेश = {
-        \प्रविष्टि_दत्त_निवेश [0], \प्रविष्टि_दत्त_निवेश [1], \प्रविष्टि_दत्त_निवेश [2], \प्रविष्टि_दत्त_निवेश [3],
-        \प्रविष्टि_दत्त_निवेश [4], \प्रविष्टि_दत्त_निवेश [5], \प्रविष्टि_दत्त_निवेश [6], \प्रविष्टि_दत्त_निवेश [7]
+    wire [7:0] paravartita_nivesha = {
+        pravishti_datta_nivesha[0], pravishti_datta_nivesha[1], pravishti_datta_nivesha[2], pravishti_datta_nivesha[3],
+        pravishti_datta_nivesha[4], pravishti_datta_nivesha[5], pravishti_datta_nivesha[6], pravishti_datta_nivesha[7]
     };
 
-    wire [7:0] \प्रयुक्त_निवेश = \प्रतिबिम्ब_निवेश_ध्वज  ? \परावर्तित_निवेश  : \प्रविष्टि_दत्त_निवेश ;
+    wire [7:0] prayukta_nivesha = pratibimba_nivesha_dhvaja ? paravartita_nivesha : pravishti_datta_nivesha;
 
     // ------------------------------------------------------------------------
-    // ३. चक्रीय गणना (Unrolled 8-Bit LFSR Combinational Block)
+    // 3. Chakriya Ganana (Unrolled 8-Bit LFSR Combinational Block)
     // ------------------------------------------------------------------------
-    reg [31:0] \गणित_क्रम_० , \गणित_क्रम_१ , \गणित_क्रम_२ , \गणित_क्रम_३ ;
-    reg [31:0] \गणित_क्रम_४ , \गणित_क्रम_५ , \गणित_क्रम_६ , \गणित_क्रम_७ ;
+    reg [31:0] ganita_krama_0, ganita_krama_1, ganita_krama_2, ganita_krama_3;
+    reg [31:0] ganita_krama_4, ganita_krama_5, ganita_krama_6, ganita_krama_7;
 
     always @(*) begin
         // Bit 0
-        if (((\चक्रीय_स्थिति_पञ्जिका  >> (\विस्तार_पञ्जिका  - 1)) & 1'b1) ^ \प्रयुक्त_निवेश [7])
-            \गणित_क्रम_०  = (\चक्रीय_स्थिति_पञ्जिका  << 1) ^ \भाजक_बहुपद_पञ्जिका ;
+        if (((chakriya_sthiti_panjika >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[7])
+            ganita_krama_0 = (chakriya_sthiti_panjika << 1) ^ bhajaka_bahupada_panjika;
         else
-            \गणित_क्रम_०  = (\चक्रीय_स्थिति_पञ्जिका  << 1);
+            ganita_krama_0 = (chakriya_sthiti_panjika << 1);
 
         // Bit 1
-        if (((\गणित_क्रम_०  >> (\विस्तार_पञ्जिका  - 1)) & 1'b1) ^ \प्रयुक्त_निवेश [6])
-            \गणित_क्रम_१  = (\गणित_क्रम_०  << 1) ^ \भाजक_बहुपद_पञ्जिका ;
+        if (((ganita_krama_0 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[6])
+            ganita_krama_1 = (ganita_krama_0 << 1) ^ bhajaka_bahupada_panjika;
         else
-            \गणित_क्रम_१  = (\गणित_क्रम_०  << 1);
+            ganita_krama_1 = (ganita_krama_0 << 1);
 
         // Bit 2
-        if (((\गणित_क्रम_१  >> (\विस्तार_पञ्जिका  - 1)) & 1'b1) ^ \प्रयुक्त_निवेश [5])
-            \गणित_क्रम_२  = (\गणित_क्रम_१  << 1) ^ \भाजक_बहुपद_पञ्जिका ;
+        if (((ganita_krama_1 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[5])
+            ganita_krama_2 = (ganita_krama_1 << 1) ^ bhajaka_bahupada_panjika;
         else
-            \गणित_क्रम_२  = (\गणित_क्रम_१  << 1);
+            ganita_krama_2 = (ganita_krama_1 << 1);
 
         // Bit 3
-        if (((\गणित_क्रम_२  >> (\विस्तार_पञ्जिका  - 1)) & 1'b1) ^ \प्रयुक्त_निवेश [4])
-            \गणित_क्रम_३  = (\गणित_क्रम_२  << 1) ^ \भाजक_बहुपद_पञ्जिका ;
+        if (((ganita_krama_2 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[4])
+            ganita_krama_3 = (ganita_krama_2 << 1) ^ bhajaka_bahupada_panjika;
         else
-            \गणित_क्रम_३  = (\गणित_क्रम_२  << 1);
+            ganita_krama_3 = (ganita_krama_2 << 1);
 
         // Bit 4
-        if (((\गणित_क्रम_३  >> (\विस्तार_पञ्जिका  - 1)) & 1'b1) ^ \प्रयुक्त_निवेश [3])
-            \गणित_क्रम_४  = (\गणित_क्रम_३  << 1) ^ \भाजक_बहुपद_पञ्जिका ;
+        if (((ganita_krama_3 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[3])
+            ganita_krama_4 = (ganita_krama_3 << 1) ^ bhajaka_bahupada_panjika;
         else
-            \गणित_क्रम_४  = (\गणित_क्रम_३  << 1);
+            ganita_krama_4 = (ganita_krama_3 << 1);
 
         // Bit 5
-        if (((\गणित_क्रम_४  >> (\विस्तार_पञ्जिका  - 1)) & 1'b1) ^ \प्रयुक्त_निवेश [2])
-            \गणित_क्रम_५  = (\गणित_क्रम_४  << 1) ^ \भाजक_बहुपद_पञ्जिका ;
+        if (((ganita_krama_4 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[2])
+            ganita_krama_5 = (ganita_krama_4 << 1) ^ bhajaka_bahupada_panjika;
         else
-            \गणित_क्रम_५  = (\गणित_क्रम_४  << 1);
+            ganita_krama_5 = (ganita_krama_4 << 1);
 
         // Bit 6
-        if (((\गणित_क्रम_५  >> (\विस्तार_पञ्जिका  - 1)) & 1'b1) ^ \प्रयुक्त_निवेश [1])
-            \गणित_क्रम_६  = (\गणित_क्रम_५  << 1) ^ \भाजक_बहुपद_पञ्जिका ;
+        if (((ganita_krama_5 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[1])
+            ganita_krama_6 = (ganita_krama_5 << 1) ^ bhajaka_bahupada_panjika;
         else
-            \गणित_क्रम_६  = (\गणित_क्रम_५  << 1);
+            ganita_krama_6 = (ganita_krama_5 << 1);
 
         // Bit 7
-        if (((\गणित_क्रम_६  >> (\विस्तार_पञ्जिका  - 1)) & 1'b1) ^ \प्रयुक्त_निवेश [0])
-            \गणित_क्रम_७  = (\गणित_क्रम_६  << 1) ^ \भाजक_बहुपद_पञ्जिका ;
+        if (((ganita_krama_6 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[0])
+            ganita_krama_7 = (ganita_krama_6 << 1) ^ bhajaka_bahupada_panjika;
         else
-            \गणित_क्रम_७  = (\गणित_क्रम_६  << 1);
+            ganita_krama_7 = (ganita_krama_6 << 1);
     end
 
-    wire \पुनःप्रारम्भ_स्वीकरण = (\विन्यास_लेखन_संकेत  && \विन्यास_पञ्जिका_संकेत  == 4'hE) || \पुनःप्रारम्भ_आदेश ;
+    wire punahprarambha_svikarana = (vinyasa_lekhana_sanketa && vinyasa_panjika_sanketa == 4'hE) || punahprarambha_adesha;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            \चक्रीय_स्थिति_पञ्जिका  <= 32'h0000FFFF;
-        end else if (\पुनःप्रारम्भ_स्वीकरण ) begin
-            \चक्रीय_स्थिति_पञ्जिका  <= \प्रारम्भिक_बीज_पञ्जिका ;
-        end else if (\प्रविष्टि_लेखन_संकेत ) begin
-            \चक्रीय_स्थिति_पञ्जिका  <= \गणित_क्रम_७ ;
+            chakriya_sthiti_panjika <= 32'h0000FFFF;
+        end else if (punahprarambha_svikarana) begin
+            chakriya_sthiti_panjika <= prarambhika_beeja_panjika;
+        end else if (pravishti_lekhana_sanketa) begin
+            chakriya_sthiti_panjika <= ganita_krama_7;
         end
     end
 
     // ------------------------------------------------------------------------
-    // ४. फलित-निर्गम-निर्धारण (Result Output with XOR-Out & Byte Slice)
+    // 4. Phalita Nirgama Nirdharana (Result Output with XOR-Out & Byte Slice)
     // ------------------------------------------------------------------------
-    wire [31:0] \अन्तिम_शेष = \चक्रीय_स्थिति_पञ्जिका  ^ \उत्क्रम_आवरण_पञ्जिका ;
+    wire [31:0] antima_shesha = chakriya_sthiti_panjika ^ utkrama_avarana_panjika;
 
-    reg [31:0] \परावर्तित_शेष ;
-    integer \क्रमांक ;
+    reg [31:0] paravartita_shesha;
+    integer kramanka;
     always @(*) begin
-        \परावर्तित_शेष  = 32'h0;
-        for (\क्रमांक  = 0; \क्रमांक  < 32; \क्रमांक  = \क्रमांक  + 1) begin
-            if (\क्रमांक  < \विस्तार_पञ्जिका )
-                \परावर्तित_शेष [\विस्तार_पञ्जिका  - 1 - \क्रमांक ] = \अन्तिम_शेष [\क्रमांक ];
+        paravartita_shesha = 32'h0;
+        for (kramanka = 0; kramanka < 32; kramanka = kramanka + 1) begin
+            if (kramanka < vistara_panjika)
+                paravartita_shesha[vistara_panjika - 1 - kramanka] = antima_shesha[kramanka];
         end
     end
 
-    wire [31:0] \प्रदर्शित_शेष = \प्रतिबिम्ब_निर्गम_ध्वज  ? \परावर्तित_शेष  : \अन्तिम_शेष ;
+    wire [31:0] pradarshita_shesha = pratibimba_nirgama_dhvaja ? paravartita_shesha : antima_shesha;
 
     always @(*) begin
-        case (\निर्गम_भाग_संकेत )
-            2'd0: \निर्गम_शेष_दत्त  = \प्रदर्शित_शेष [7:0];
-            2'd1: \निर्गम_शेष_दत्त  = \प्रदर्शित_शेष [15:8];
-            2'd2: \निर्गम_शेष_दत्त  = \प्रदर्शित_शेष [23:16];
-            2'd3: \निर्गम_शेष_दत्त  = \प्रदर्शित_शेष [31:24];
+        case (nirgama_bhaga_sanketa)
+            2'd0: nirgama_shesha_datta = pradarshita_shesha[7:0];
+            2'd1: nirgama_shesha_datta = pradarshita_shesha[15:8];
+            2'd2: nirgama_shesha_datta = pradarshita_shesha[23:16];
+            2'd3: nirgama_shesha_datta = pradarshita_shesha[31:24];
         endcase
     end
 

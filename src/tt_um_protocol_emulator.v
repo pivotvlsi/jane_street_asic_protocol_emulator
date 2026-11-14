@@ -107,13 +107,13 @@ module tt_um_protocol_emulator (
         .cpu5_jmp_addr(cpu5_jmp_waddr), .cpu5_jmp_wdata(cpu5_jmp_wdata), .cpu5_jmp_we(cpu5_jmp_we),
         .cpu5_rx_fifo_wdata(cpu5_rx_fifo_wdata), .cpu5_rx_fifo_we(cpu5_rx_fifo_we),
         .cpu5_tx_fifo_rdata(cpu5_tx_fifo_rdata), .cpu5_tx_fifo_re(cpu5_tx_fifo_re), .cpu5_tx_fifo_empty(cpu5_tx_fifo_empty),
-        .\चक्रीय_विन्यास_लेखन (spi_crc_we),
-        .\चक्रीय_विन्यास_पञ्जिका (spi_crc_addr),
-        .\चक्रीय_विन्यास_दत्त (spi_crc_wdata)
+        .chakriya_vinyasa_lekhana(spi_crc_we),
+        .chakriya_vinyasa_panjika(spi_crc_addr),
+        .chakriya_vinyasa_datta(spi_crc_wdata)
     );
 
     // ========================================================
-    // सार्वत्रिक चक्रीय पुनरावृत्ति तपासक (Universal CRC Engine)
+    // sarvatrika_chakriya_punaravritti (Universal CRC Engine)
     // ========================================================
     wire        spi_crc_we;
     wire [3:0]  spi_crc_addr;
@@ -155,17 +155,17 @@ module tt_um_protocol_emulator (
 
     wire [7:0] crc_result_byte;
 
-    \सार्वत्रिक_चक्रीय_पुनरावृत्ति  crc_inst (
+    sarvatrika_chakriya_punaravritti crc_inst (
         .clk(clk),
         .rst_n(rst_n),
-        .\विन्यास_लेखन_संकेत (spi_crc_we),
-        .\विन्यास_पञ्जिका_संकेत (spi_crc_addr),
-        .\विन्यास_दत्त_निवेश (spi_crc_wdata),
-        .\प्रविष्टि_दत्त_निवेश (crc_feed_data),
-        .\प्रविष्टि_लेखन_संकेत (crc_feed_we),
-        .\पुनःप्रारम्भ_आदेश (crc_reseed_cmd),
-        .\निर्गम_भाग_संकेत (crc_slice_sel),
-        .\निर्गम_शेष_दत्त (crc_result_byte)
+        .vinyasa_lekhana_sanketa(spi_crc_we),
+        .vinyasa_panjika_sanketa(spi_crc_addr),
+        .vinyasa_datta_nivesha(spi_crc_wdata),
+        .pravishti_datta_nivesha(crc_feed_data),
+        .pravishti_lekhana_sanketa(crc_feed_we),
+        .punahprarambha_adesha(crc_reseed_cmd),
+        .nirgama_bhaga_sanketa(crc_slice_sel),
+        .nirgama_shesha_datta(crc_result_byte)
     );
 
     reg [7:0] shared_reg_0; reg shared_reg_0_valid;
@@ -272,7 +272,7 @@ module tt_um_protocol_emulator (
     end
 
     // ========================================================
-    // CPU 0 SUBSYSTEM (संसाधक_0)
+    // CPU 0 SUBSYSTEM (sansadhaka_0)
     // ========================================================
     reg [3:0] cpu0_rom_op [0:127];
     reg [3:0] cpu0_rom_op1 [0:63];
@@ -354,7 +354,7 @@ module tt_um_protocol_emulator (
 
     cpu_core core0 (
         .clk(clk), .rst_n(rst_n), .run(cpu0_run),
-        .\शोधन_विराम (dbg_halt[0]),
+        .shodhana_virama(dbg_halt[0]),
         .pin_state(uio_in), .pin_out(cpu0_pin_out), .pin_dir(cpu0_pin_dir),
         .pc_op(cpu0_pc_op), .rom_op_data(cpu0_rom_op_data),
         .pc_op1(cpu0_pc_op1), .rom_op1_data(cpu0_rom_op1_data),
@@ -364,15 +364,15 @@ module tt_um_protocol_emulator (
         .mem_rdata(cpu0_mem_rdata), .mem_stall(cpu0_mem_stall),
         .shared_valid({shared_reg_5_valid, shared_reg_4_valid, shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
         .overrun_flag(cpu0_tx_overrun),
-        .\शोधन_पञ्जिका_संकेत (dbg_reg_addr),
-        .\शोधन_सञ्चायक (cpu0_dbg_acc),
-        .\शोधन_सहायक (cpu0_dbg_b),
-        .\शोधन_ध्वज (cpu0_dbg_flags),
-        .\शोधन_सामान्य_पञ्जिका (cpu0_dbg_r)
+        .shodhana_panjika_sanketa(dbg_reg_addr),
+        .shodhana_sanchayaka(cpu0_dbg_acc),
+        .shodhana_sahayaka(cpu0_dbg_b),
+        .shodhana_dhvaja(cpu0_dbg_flags),
+        .shodhana_samanya_panjika(cpu0_dbg_r)
     );
 
     // ========================================================
-    // CPU 1 SUBSYSTEM (संसाधक_1)
+    // CPU 1 SUBSYSTEM (sansadhaka_1)
     // ========================================================
     reg [3:0] cpu1_rom_op [0:127];
     reg [3:0] cpu1_rom_op1 [0:63];
@@ -454,7 +454,7 @@ module tt_um_protocol_emulator (
 
     cpu_core core1 (
         .clk(clk), .rst_n(rst_n), .run(cpu1_run),
-        .\शोधन_विराम (dbg_halt[1]),
+        .shodhana_virama(dbg_halt[1]),
         .pin_state(uio_in), .pin_out(cpu1_pin_out), .pin_dir(cpu1_pin_dir),
         .pc_op(cpu1_pc_op), .rom_op_data(cpu1_rom_op_data),
         .pc_op1(cpu1_pc_op1), .rom_op1_data(cpu1_rom_op1_data),
@@ -464,15 +464,15 @@ module tt_um_protocol_emulator (
         .mem_rdata(cpu1_mem_rdata), .mem_stall(cpu1_mem_stall),
         .shared_valid({shared_reg_5_valid, shared_reg_4_valid, shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
         .overrun_flag(cpu1_tx_overrun),
-        .\शोधन_पञ्जिका_संकेत (dbg_reg_addr),
-        .\शोधन_सञ्चायक (cpu1_dbg_acc),
-        .\शोधन_सहायक (cpu1_dbg_b),
-        .\शोधन_ध्वज (cpu1_dbg_flags),
-        .\शोधन_सामान्य_पञ्जिका (cpu1_dbg_r)
+        .shodhana_panjika_sanketa(dbg_reg_addr),
+        .shodhana_sanchayaka(cpu1_dbg_acc),
+        .shodhana_sahayaka(cpu1_dbg_b),
+        .shodhana_dhvaja(cpu1_dbg_flags),
+        .shodhana_samanya_panjika(cpu1_dbg_r)
     );
 
     // ========================================================
-    // CPU 2 SUBSYSTEM (संसाधक_2)
+    // CPU 2 SUBSYSTEM (sansadhaka_2)
     // ========================================================
     reg [3:0] cpu2_rom_op [0:127];
     reg [3:0] cpu2_rom_op1 [0:63];
@@ -554,7 +554,7 @@ module tt_um_protocol_emulator (
 
     cpu_core core2 (
         .clk(clk), .rst_n(rst_n), .run(cpu2_run),
-        .\शोधन_विराम (dbg_halt[2]),
+        .shodhana_virama(dbg_halt[2]),
         .pin_state(uio_in), .pin_out(cpu2_pin_out), .pin_dir(cpu2_pin_dir),
         .pc_op(cpu2_pc_op), .rom_op_data(cpu2_rom_op_data),
         .pc_op1(cpu2_pc_op1), .rom_op1_data(cpu2_rom_op1_data),
@@ -564,15 +564,15 @@ module tt_um_protocol_emulator (
         .mem_rdata(cpu2_mem_rdata), .mem_stall(cpu2_mem_stall),
         .shared_valid({shared_reg_5_valid, shared_reg_4_valid, shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
         .overrun_flag(cpu2_tx_overrun),
-        .\शोधन_पञ्जिका_संकेत (dbg_reg_addr),
-        .\शोधन_सञ्चायक (cpu2_dbg_acc),
-        .\शोधन_सहायक (cpu2_dbg_b),
-        .\शोधन_ध्वज (cpu2_dbg_flags),
-        .\शोधन_सामान्य_पञ्जिका (cpu2_dbg_r)
+        .shodhana_panjika_sanketa(dbg_reg_addr),
+        .shodhana_sanchayaka(cpu2_dbg_acc),
+        .shodhana_sahayaka(cpu2_dbg_b),
+        .shodhana_dhvaja(cpu2_dbg_flags),
+        .shodhana_samanya_panjika(cpu2_dbg_r)
     );
 
     // ========================================================
-    // CPU 3 SUBSYSTEM (संसाधक_3)
+    // CPU 3 SUBSYSTEM (sansadhaka_3)
     // ========================================================
     reg [3:0] cpu3_rom_op [0:127];
     reg [3:0] cpu3_rom_op1 [0:63];
@@ -654,7 +654,7 @@ module tt_um_protocol_emulator (
 
     cpu_core core3 (
         .clk(clk), .rst_n(rst_n), .run(cpu3_run),
-        .\शोधन_विराम (dbg_halt[3]),
+        .shodhana_virama(dbg_halt[3]),
         .pin_state(uio_in), .pin_out(cpu3_pin_out), .pin_dir(cpu3_pin_dir),
         .pc_op(cpu3_pc_op), .rom_op_data(cpu3_rom_op_data),
         .pc_op1(cpu3_pc_op1), .rom_op1_data(cpu3_rom_op1_data),
@@ -664,15 +664,15 @@ module tt_um_protocol_emulator (
         .mem_rdata(cpu3_mem_rdata), .mem_stall(cpu3_mem_stall),
         .shared_valid({shared_reg_5_valid, shared_reg_4_valid, shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
         .overrun_flag(cpu3_tx_overrun),
-        .\शोधन_पञ्जिका_संकेत (dbg_reg_addr),
-        .\शोधन_सञ्चायक (cpu3_dbg_acc),
-        .\शोधन_सहायक (cpu3_dbg_b),
-        .\शोधन_ध्वज (cpu3_dbg_flags),
-        .\शोधन_सामान्य_पञ्जिका (cpu3_dbg_r)
+        .shodhana_panjika_sanketa(dbg_reg_addr),
+        .shodhana_sanchayaka(cpu3_dbg_acc),
+        .shodhana_sahayaka(cpu3_dbg_b),
+        .shodhana_dhvaja(cpu3_dbg_flags),
+        .shodhana_samanya_panjika(cpu3_dbg_r)
     );
 
     // ========================================================
-    // CPU 4 SUBSYSTEM (संसाधक_4)
+    // CPU 4 SUBSYSTEM (sansadhaka_4)
     // ========================================================
     reg [3:0] cpu4_rom_op [0:127];
     reg [3:0] cpu4_rom_op1 [0:63];
@@ -754,7 +754,7 @@ module tt_um_protocol_emulator (
 
     cpu_core core4 (
         .clk(clk), .rst_n(rst_n), .run(cpu4_run),
-        .\शोधन_विराम (dbg_halt[4]),
+        .shodhana_virama(dbg_halt[4]),
         .pin_state(uio_in), .pin_out(cpu4_pin_out), .pin_dir(cpu4_pin_dir),
         .pc_op(cpu4_pc_op), .rom_op_data(cpu4_rom_op_data),
         .pc_op1(cpu4_pc_op1), .rom_op1_data(cpu4_rom_op1_data),
@@ -764,15 +764,15 @@ module tt_um_protocol_emulator (
         .mem_rdata(cpu4_mem_rdata), .mem_stall(cpu4_mem_stall),
         .shared_valid({shared_reg_5_valid, shared_reg_4_valid, shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
         .overrun_flag(cpu4_tx_overrun),
-        .\शोधन_पञ्जिका_संकेत (dbg_reg_addr),
-        .\शोधन_सञ्चायक (cpu4_dbg_acc),
-        .\शोधन_सहायक (cpu4_dbg_b),
-        .\शोधन_ध्वज (cpu4_dbg_flags),
-        .\शोधन_सामान्य_पञ्जिका (cpu4_dbg_r)
+        .shodhana_panjika_sanketa(dbg_reg_addr),
+        .shodhana_sanchayaka(cpu4_dbg_acc),
+        .shodhana_sahayaka(cpu4_dbg_b),
+        .shodhana_dhvaja(cpu4_dbg_flags),
+        .shodhana_samanya_panjika(cpu4_dbg_r)
     );
 
     // ========================================================
-    // CPU 5 SUBSYSTEM (संसाधक_5)
+    // CPU 5 SUBSYSTEM (sansadhaka_5)
     // ========================================================
     reg [3:0] cpu5_rom_op [0:127];
     reg [3:0] cpu5_rom_op1 [0:63];
@@ -854,7 +854,7 @@ module tt_um_protocol_emulator (
 
     cpu_core core5 (
         .clk(clk), .rst_n(rst_n), .run(cpu5_run),
-        .\शोधन_विराम (dbg_halt[5]),
+        .shodhana_virama(dbg_halt[5]),
         .pin_state(uio_in), .pin_out(cpu5_pin_out), .pin_dir(cpu5_pin_dir),
         .pc_op(cpu5_pc_op), .rom_op_data(cpu5_rom_op_data),
         .pc_op1(cpu5_pc_op1), .rom_op1_data(cpu5_rom_op1_data),
@@ -864,11 +864,11 @@ module tt_um_protocol_emulator (
         .mem_rdata(cpu5_mem_rdata), .mem_stall(cpu5_mem_stall),
         .shared_valid({shared_reg_5_valid, shared_reg_4_valid, shared_reg_3_valid, shared_reg_2_valid, shared_reg_1_valid, shared_reg_0_valid}),
         .overrun_flag(cpu5_tx_overrun),
-        .\शोधन_पञ्जिका_संकेत (dbg_reg_addr),
-        .\शोधन_सञ्चायक (cpu5_dbg_acc),
-        .\शोधन_सहायक (cpu5_dbg_b),
-        .\शोधन_ध्वज (cpu5_dbg_flags),
-        .\शोधन_सामान्य_पञ्जिका (cpu5_dbg_r)
+        .shodhana_panjika_sanketa(dbg_reg_addr),
+        .shodhana_sanchayaka(cpu5_dbg_acc),
+        .shodhana_sahayaka(cpu5_dbg_b),
+        .shodhana_dhvaja(cpu5_dbg_flags),
+        .shodhana_samanya_panjika(cpu5_dbg_r)
     );
 
     wire [5:0] dbg_halt;
@@ -959,21 +959,21 @@ module tt_um_protocol_emulator (
     dvitantri_shodhana dbg_ctrl (
         .clk(clk),
         .rst_n(rst_n),
-        .\शोधन_घटिका (dbg_sclk),
-        .\शोधन_निवेश (dbg_din),
-        .\शोधन_निर्गम (dbg_dout),
-        .\विराम_संकेत (dbg_halt),
-        .\संसाधक_क्रमांक (dbg_core_id),
-        .\पञ्जिका_संकेत (dbg_reg_addr),
-        .\सञ्चायक_दत्त (muxed_dbg_acc),
-        .\सहायक_दत्त (muxed_dbg_b),
-        .\ध्वज_दत्त (muxed_dbg_flags),
-        .\गणक_संकेत_० (muxed_dbg_pc0),
-        .\गणक_संकेत_१ (muxed_dbg_pc1),
-        .\गणक_संकेत_२ (muxed_dbg_pc2),
-        .\सामान्य_पञ्जिका (muxed_dbg_r),
-        .\पिन्_दिश_दत्त (muxed_dbg_pindir),
-        .\पिन्_निर्गम_दत्त (muxed_dbg_pinout)
+        .shodhana_ghatika(dbg_sclk),
+        .shodhana_nivesha(dbg_din),
+        .shodhana_nirgama(dbg_dout),
+        .virama_sanketa(dbg_halt),
+        .sansadhaka_kramanka(dbg_core_id),
+        .panjika_sanketa(dbg_reg_addr),
+        .sanchayaka_datta(muxed_dbg_acc),
+        .sahayaka_datta(muxed_dbg_b),
+        .dhvaja_datta(muxed_dbg_flags),
+        .ganaka_sanketa_0(muxed_dbg_pc0),
+        .ganaka_sanketa_1(muxed_dbg_pc1),
+        .ganaka_sanketa_2(muxed_dbg_pc2),
+        .samanya_panjika(muxed_dbg_r),
+        .pin_disha_datta(muxed_dbg_pindir),
+        .pin_nirgama_datta(muxed_dbg_pinout)
     );
 
     assign uio_oe = cpu0_pin_dir | cpu1_pin_dir | cpu2_pin_dir | 

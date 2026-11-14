@@ -192,8 +192,8 @@ async def test_universal_crc_spi_preload_and_calculation(dut):
     await preload_crc(0xE, 0x01)    # Re-seed trigger
 
     # Verify LFSR is seeded properly
-    width_val = int(getattr(dut.crc_inst, "\\विस्तार_पञ्जिका ").value)
-    poly_val = int(getattr(dut.crc_inst, "\\भाजक_बहुपद_पञ्जिका ").value)
+    width_val = int(dut.crc_inst.vistara_panjika.value)
+    poly_val = int(dut.crc_inst.bhajaka_bahupada_panjika.value)
     assert width_val == 16, f"CRC Width must be 16, got {width_val}"
     assert poly_val == 0x8005, f"CRC Polynomial must be 0x8005, got {hex(poly_val)}"
 

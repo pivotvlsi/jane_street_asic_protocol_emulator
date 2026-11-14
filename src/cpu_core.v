@@ -6,7 +6,7 @@ module cpu_core (
     
     // CPU Control
     input  wire        run,       // 1 = Run, 0 = Halt
-    input  wire        \शोधन_विराम , // Debug Halt (1 = Freeze core)
+    input  wire        shodhana_virama, // Debug Halt (1 = Freeze core)
     
     // Physical Pin Interface (8-bit)
     input  wire [7:0]  pin_state, // Data read from 8-bit uio
@@ -40,11 +40,11 @@ module cpu_core (
     input  wire        overrun_flag,
 
     // Two-Wire Debug Readout Direct Taps
-    input  wire [3:0]  \शोधन_पञ्जिका_संकेत ,
-    output wire [7:0]  \शोधन_सञ्चायक ,
-    output wire [7:0]  \शोधन_सहायक ,
-    output wire [7:0]  \शोधन_ध्वज ,
-    output wire [7:0]  \शोधन_सामान्य_पञ्जिका 
+    input  wire [3:0]  shodhana_panjika_sanketa,
+    output wire [7:0]  shodhana_sanchayaka,
+    output wire [7:0]  shodhana_sahayaka,
+    output wire [7:0]  shodhana_dhvaja,
+    output wire [7:0]  shodhana_samanya_panjika
 );
 
     // Internal Registers
@@ -57,13 +57,13 @@ module cpu_core (
 
     // Dedicated clean STATUS_FLAGS (Read at 0x8)
     // Bit 0: Zero, Bit 1: Carry, Bits 2..5: Shared Valids, Bit 6: Overrun, Bit 7: 0
-    wire [7:0] \ध्वज_पञ्जिका = {1'b0, overrun_flag, shared_valid[3:0], flag_carry, flag_zero};
+    wire [7:0] dhvaja_panjika = {1'b0, overrun_flag, shared_valid[3:0], flag_carry, flag_zero};
 
     // Direct Taps for Two-Wire Debug Controller
-    assign \शोधन_सञ्चायक         = acc;
-    assign \शोधन_सहायक           = b_reg;
-    assign \शोधन_ध्वज             = \ध्वज_पञ्जिका ;
-    assign \शोधन_सामान्य_पञ्जिका = r_regs[\शोधन_पञ्जिका_संकेत ];
+    assign shodhana_sanchayaka         = acc;
+    assign shodhana_sahayaka           = b_reg;
+    assign shodhana_dhvaja             = dhvaja_panjika;
+    assign shodhana_samanya_panjika    = r_regs[shodhana_panjika_sanketa];
 
     // Decoder Instantiation
     wire is_1_nibble, is_2_nibble, is_3_nibble;
@@ -79,8 +79,8 @@ module cpu_core (
     
     assign mem_addr  = rom_op1_data;
     assign mem_wdata = acc;
-    assign mem_we    = (rom_op_data == 4'hC && (!is_internal_reg(rom_op1_data) || rom_op1_data == 4'h8) && run && !\शोधन_विराम );
-    assign mem_re    = (rom_op_data == 4'hB && !is_internal_reg(rom_op1_data) && run && !\शोधन_विराम );
+    assign mem_we    = (rom_op_data == 4'hC && (!is_internal_reg(rom_op1_data) || rom_op1_data == 4'h8) && run && !shodhana_virama);
+    assign mem_re    = (rom_op_data == 4'hB && !is_internal_reg(rom_op1_data) && run && !shodhana_virama);
     
     assign jmp_table_addr = rom_op1_data;
 
@@ -109,7 +109,7 @@ module cpu_core (
             pc_op  <= 0;
             pc_op1 <= 0;
             pc_op2 <= 0;
-        end else if (!mem_stall && !\शोधन_विराम ) begin
+        end else if (!mem_stall && !shodhana_virama) begin
 
             // Instruction Execution
             case (rom_op_data)
@@ -128,7 +128,7 @@ module cpu_core (
                     if (is_internal_reg(rom_op1_data)) begin
                         if (rom_op1_data == 4'h0) begin acc <= acc; flag_zero <= (acc == 0); end
                         else if (rom_op1_data == 4'h1) begin acc <= b_reg; flag_zero <= (b_reg == 0); end
-                        else if (rom_op1_data == 4'h8) begin acc <= \ध्वज_पञ्जिका ; flag_zero <= (\ध्वज_पञ्जिका == 0); end
+                        else if (rom_op1_data == 4'h8) begin acc <= dhvaja_panjika; flag_zero <= (dhvaja_panjika == 0); end
                         else if (rom_op1_data == 4'hF) begin acc <= {pin_state[3:0], pin_dir[3:0]}; flag_zero <= ({pin_state[3:0], pin_dir[3:0]} == 0); end
                         else begin acc <= r_regs[rom_op1_data]; flag_zero <= (r_regs[rom_op1_data] == 0); end
                     end else begin
@@ -166,7 +166,7 @@ module cpu_core (
 
     // Separate synchronous block for r_regs
     always @(posedge clk) begin
-        if (run && !mem_stall && !\शोधन_विराम && rom_op_data == 4'hC) begin
+        if (run && !mem_stall && !shodhana_virama && rom_op_data == 4'hC) begin
             if (is_internal_reg(rom_op1_data)) begin
                 if (rom_op1_data != 4'h0 && rom_op1_data != 4'h1 && rom_op1_data != 4'h8 && rom_op1_data != 4'hF) begin
                     r_regs[rom_op1_data] <= acc;

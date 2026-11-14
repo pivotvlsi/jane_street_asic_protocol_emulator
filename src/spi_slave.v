@@ -122,9 +122,10 @@ module spi_slave (
     input  wire       cpu5_tx_fifo_empty,
 
     // Interface to Universal CRC Accelerator
-    output reg        \चक्रीय_विन्यास_लेखन ,
-    output reg [3:0]  \चक्रीय_विन्यास_पञ्जिका ,
-    output reg [7:0]  \चक्रीय_विन्यास_दत्त 
+    // Chakriya Vinyas (CRC Configuration Interface)
+    output reg        chakriya_vinyasa_lekhana,
+    output reg [3:0]  chakriya_vinyasa_panjika,
+    output reg [7:0]  chakriya_vinyasa_datta
 );
 
     // Synchronize SPI inputs
@@ -196,9 +197,9 @@ module spi_slave (
             cpu5_jmp_addr <= 0; cpu5_jmp_we <= 0;
             cpu5_rx_fifo_we <= 0; cpu5_tx_fifo_re <= 0;
 
-            \चक्रीय_विन्यास_लेखन  <= 0;
-            \चक्रीय_विन्यास_पञ्जिका  <= 0;
-            \चक्रीय_विन्यास_दत्त  <= 0;
+            chakriya_vinyasa_lekhana  <= 0;
+            chakriya_vinyasa_panjika  <= 0;
+            chakriya_vinyasa_datta    <= 0;
         end else begin
             // Clear single-cycle strobes
             cpu0_ram_op_we <= 0; cpu0_ram_op1_we <= 0; cpu0_ram_op2_we <= 0; cpu0_jmp_we <= 0; cpu0_rx_fifo_we <= 0; cpu0_tx_fifo_re <= 0;
@@ -207,7 +208,7 @@ module spi_slave (
             cpu3_ram_op_we <= 0; cpu3_ram_op1_we <= 0; cpu3_ram_op2_we <= 0; cpu3_jmp_we <= 0; cpu3_rx_fifo_we <= 0; cpu3_tx_fifo_re <= 0;
             cpu4_ram_op_we <= 0; cpu4_ram_op1_we <= 0; cpu4_ram_op2_we <= 0; cpu4_jmp_we <= 0; cpu4_rx_fifo_we <= 0; cpu4_tx_fifo_re <= 0;
             cpu5_ram_op_we <= 0; cpu5_ram_op1_we <= 0; cpu5_ram_op2_we <= 0; cpu5_jmp_we <= 0; cpu5_rx_fifo_we <= 0; cpu5_tx_fifo_re <= 0;
-            \चक्रीय_विन्यास_लेखन  <= 0;
+            chakriya_vinyasa_lekhana  <= 0;
             
             if (spi_cs) begin
                 is_cmd_phase <= 1;
@@ -296,9 +297,9 @@ module spi_slave (
                                 // CRC Configuration Preload (0x60..0x6F)
                                 8'h60, 8'h61, 8'h62, 8'h63, 8'h64, 8'h65, 8'h66, 8'h67,
                                 8'h68, 8'h69, 8'h6A, 8'h6B, 8'h6C, 8'h6D, 8'h6E, 8'h6F: begin
-                                    \चक्रीय_विन्यास_लेखन    <= 1'b1;
-                                    \चक्रीय_विन्यास_पञ्जिका  <= cmd_byte[3:0];
-                                    \चक्रीय_विन्यास_दत्त    <= {shift_reg[6:0], spi_mosi};
+                                    chakriya_vinyasa_lekhana    <= 1'b1;
+                                    chakriya_vinyasa_panjika  <= cmd_byte[3:0];
+                                    chakriya_vinyasa_datta    <= {shift_reg[6:0], spi_mosi};
                                 end
 
                                 default: begin /* Unknown command */ end
