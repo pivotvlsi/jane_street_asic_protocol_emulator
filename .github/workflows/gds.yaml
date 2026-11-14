@@ -18,6 +18,20 @@ jobs:
         with:
           pdk: ihp-sg13cmos5l
 
+      - name: Print OpenLane and Flow Logs on Failure
+        if: failure()
+        run: |
+          echo "=================================================="
+          echo ">>> PRINTING FAILURE LOGS & SUMMARY <<<"
+          echo "=================================================="
+          find . -name "*.log" -o -name "openlane.log" -o -name "*.rpt" | while read -r f; do
+            echo "--------------------------------------------------"
+            echo "LOG FILE: $f"
+            echo "--------------------------------------------------"
+            tail -n 100 "$f"
+          done
+
+
   precheck:
     needs: gds
     runs-on: ubuntu-24.04
