@@ -1,42 +1,50 @@
 `default_nettype none
 
 module cpu_core (
-    input  wire       clk,
-    input  wire       rst_n,
+    input  wire        clk,
+    input  wire        rst_n,
     
     // CPU Control
-    input  wire       run,      // 1 = Run, 0 = Halt
+    input  wire        run,       // 1 = Run, 0 = Halt
+    input  wire        \शोधन_विराम , // Debug Halt (1 = Freeze core)
     
-    // Physical Pin Interface
-    input  wire [3:0] pin_state, // Data read from uio
-    output reg  [3:0] pin_out,  // Data driven to uio
-    output reg  [3:0] pin_dir,  // 1 = Output, 0 = High-Z
+    // Physical Pin Interface (8-bit)
+    input  wire [7:0]  pin_state, // Data read from 8-bit uio
+    output reg  [7:0]  pin_out,   // Data driven to 8-bit uio
+    output reg  [7:0]  pin_dir,   // 8-bit direction: 1 = Output, 0 = High-Z
     
     // Split-Stream Instruction ROM Interfaces
-    output reg  [6:0] pc_op,
-    input  wire [3:0] rom_op_data,
+    output reg  [6:0]  pc_op,
+    input  wire [3:0]  rom_op_data,
     
-    output reg  [5:0] pc_op1,
-    input  wire [3:0] rom_op1_data,
+    output reg  [5:0]  pc_op1,
+    input  wire [3:0]  rom_op1_data,
     
-    output reg  [3:0] pc_op2,
-    input  wire [3:0] rom_op2_data,
+    output reg  [3:0]  pc_op2,
+    input  wire [3:0]  rom_op2_data,
 
-    // Jump Table Interface (Hardware Jump Table managed by top.v)
-    output wire [3:0]  jmp_table_addr, // The jump ID to lookup
-    input  wire [16:0] jmp_table_data, // {pc_op[6:0], pc_op1[5:0], pc_op2[3:0]}
+    // Jump Table Interface
+    output wire [3:0]  jmp_table_addr,
+    input  wire [16:0] jmp_table_data,
     
-    // Memory-Mapped IO Interface (External Peripherals)
-    output wire [3:0] mem_addr,
-    output wire [7:0] mem_wdata,
-    output wire       mem_we,
-    output wire       mem_re,
-    input  wire [7:0] mem_rdata,
-    input  wire       mem_stall, // High when FIFO empty/full or Timer blocking
+    // Memory-Mapped IO Interface
+    output wire [3:0]  mem_addr,
+    output wire [7:0]  mem_wdata,
+    output wire        mem_we,
+    output wire        mem_re,
+    input  wire [7:0]  mem_rdata,
+    input  wire        mem_stall,
     
-    // Special internal status flags mapped to address 0x8
-    input  wire [3:0] shared_valid,
-    input  wire       overrun_flag
+    // Status inputs
+    input  wire [5:0]  shared_valid,
+    input  wire        overrun_flag,
+
+    // Two-Wire Debug Readout Direct Taps
+    input  wire [3:0]  \शोधन_पञ्जिका_संकेत ,
+    output wire [7:0]  \शोधन_सञ्चायक ,
+    output wire [7:0]  \शोधन_सहायक ,
+    output wire [7:0]  \शोधन_ध्वज ,
+    output wire [7:0]  \शोधन_सामान्य_पञ्जिका 
 );
 
     // Internal Registers
@@ -46,6 +54,16 @@ module cpu_core (
     
     reg       flag_zero;
     reg       flag_carry;
+
+    // Dedicated clean STATUS_FLAGS (Read at 0x8)
+    // Bit 0: Zero, Bit 1: Carry, Bits 2..5: Shared Valids, Bit 6: Overrun, Bit 7: 0
+    wire [7:0] \ध्वज_पञ्जिका = {1'b0, overrun_flag, shared_valid[3:0], flag_carry, flag_zero};
+
+    // Direct Taps for Two-Wire Debug Controller
+    assign \शोधन_सञ्चायक         = acc;
+    assign \शोधन_सहायक           = b_reg;
+    assign \शोधन_ध्वज             = \ध्वज_पञ्जिका ;
+    assign \शोधन_सामान्य_पञ्जिका = r_regs[\शोधन_पञ्जिका_संकेत ];
 
     // Decoder Instantiation
     wire is_1_nibble, is_2_nibble, is_3_nibble;
@@ -59,35 +77,39 @@ module cpu_core (
     wire [8:0] add_res = acc + b_reg;
     wire [8:0] sub_res = acc - b_reg;
     
-    assign mem_addr = rom_op1_data;
+    assign mem_addr  = rom_op1_data;
     assign mem_wdata = acc;
-    assign mem_we = (rom_op_data == 4'hC && (!is_internal_reg(rom_op1_data) || rom_op1_data == 4'h8) && run);
-    assign mem_re = (rom_op_data == 4'hB && !is_internal_reg(rom_op1_data) && run);
+    assign mem_we    = (rom_op_data == 4'hC && (!is_internal_reg(rom_op1_data) || rom_op1_data == 4'h8) && run && !\शोधन_विराम );
+    assign mem_re    = (rom_op_data == 4'hB && !is_internal_reg(rom_op1_data) && run && !\शोधन_विराम );
     
     assign jmp_table_addr = rom_op1_data;
 
     function is_internal_reg(input [3:0] addr);
         begin
-            is_internal_reg = (addr <= 4'h3) || (addr == 4'h8) || (addr >= 4'hB);
+            // 0x0..0x3 are ACC, B, R2, R3
+            // 0x8 is STATUS_FLAGS
+            // 0xF is PIN_DIR
+            // 0x4..0x7 and 0x9..0xE are memory-mapped peripherals (FIFO, Timer, Shared, CRC)
+            is_internal_reg = (addr <= 4'h3) || (addr == 4'h8) || (addr == 4'hF);
         end
     endfunction
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            pc_op <= 0;
-            pc_op1 <= 0;
-            pc_op2 <= 0;
-            acc <= 0;
-            b_reg <= 0;
-            flag_zero <= 0;
+            pc_op      <= 0;
+            pc_op1     <= 0;
+            pc_op2     <= 0;
+            acc        <= 0;
+            b_reg      <= 0;
+            flag_zero  <= 0;
             flag_carry <= 0;
-            pin_out <= 0;
-            pin_dir <= 0;
+            pin_out    <= 0;
+            pin_dir    <= 0;
         end else if (!run) begin
-            pc_op <= 0;
+            pc_op  <= 0;
             pc_op1 <= 0;
             pc_op2 <= 0;
-        end else if (!mem_stall) begin
+        end else if (!mem_stall && !\शोधन_विराम ) begin
 
             // Instruction Execution
             case (rom_op_data)
@@ -99,15 +121,15 @@ module cpu_core (
                 4'h5: begin flag_carry <= acc[7]; acc <= {acc[6:0], 1'b0}; flag_zero <= ({acc[6:0], 1'b0} == 0); end
                 4'h6: begin /* NOP */ end
                 4'h7: begin b_reg <= {rom_op1_data, rom_op2_data}; end
-                4'h8: begin pin_out[rom_op1_data[1:0]] <= 1'b0; end
-                4'h9: begin pin_out[rom_op1_data[1:0]] <= 1'b1; end
+                4'h8: begin pin_out[rom_op1_data[2:0]] <= 1'b0; end
+                4'h9: begin pin_out[rom_op1_data[2:0]] <= 1'b1; end
                 4'hA: begin acc <= {rom_op1_data, rom_op2_data}; flag_zero <= ({rom_op1_data, rom_op2_data} == 0); end
                 4'hB: begin // LOAD
                     if (is_internal_reg(rom_op1_data)) begin
                         if (rom_op1_data == 4'h0) begin acc <= acc; flag_zero <= (acc == 0); end
                         else if (rom_op1_data == 4'h1) begin acc <= b_reg; flag_zero <= (b_reg == 0); end
-                        else if (rom_op1_data == 4'h8) begin acc <= {1'b0, overrun_flag, shared_valid, flag_carry, flag_zero}; flag_zero <= ({1'b0, overrun_flag, shared_valid, flag_carry, flag_zero} == 0); end
-                        else if (rom_op1_data == 4'hF) begin acc <= {pin_state, pin_dir}; flag_zero <= ({pin_state, pin_dir} == 0); end
+                        else if (rom_op1_data == 4'h8) begin acc <= \ध्वज_पञ्जिका ; flag_zero <= (\ध्वज_पञ्जिका == 0); end
+                        else if (rom_op1_data == 4'hF) begin acc <= {pin_state[3:0], pin_dir[3:0]}; flag_zero <= ({pin_state[3:0], pin_dir[3:0]} == 0); end
                         else begin acc <= r_regs[rom_op1_data]; flag_zero <= (r_regs[rom_op1_data] == 0); end
                     end else begin
                         acc <= mem_rdata;
@@ -117,7 +139,7 @@ module cpu_core (
                 4'hC: begin // STORE
                     if (is_internal_reg(rom_op1_data)) begin
                         if (rom_op1_data == 4'h1) b_reg <= acc;
-                        else if (rom_op1_data == 4'hF) pin_dir <= acc[3:0];
+                        else if (rom_op1_data == 4'hF) pin_dir <= acc;
                     end
                 end
                 default: begin
@@ -130,7 +152,7 @@ module cpu_core (
                (rom_op_data == 4'hE && !flag_zero) || 
                (rom_op_data == 4'hF && flag_carry)) begin
                 // Take Branch (Jump)
-                pc_op <= jmp_table_data[16:10];
+                pc_op  <= jmp_table_data[16:10];
                 pc_op1 <= jmp_table_data[9:4];
                 pc_op2 <= jmp_table_data[3:0];
             end else begin
@@ -142,9 +164,9 @@ module cpu_core (
         end
     end
 
-    // Separate synchronous block for r_regs (no async reset)
+    // Separate synchronous block for r_regs
     always @(posedge clk) begin
-        if (run && !mem_stall && rom_op_data == 4'hC) begin
+        if (run && !mem_stall && !\शोधन_विराम && rom_op_data == 4'hC) begin
             if (is_internal_reg(rom_op1_data)) begin
                 if (rom_op1_data != 4'h0 && rom_op1_data != 4'h1 && rom_op1_data != 4'h8 && rom_op1_data != 4'hF) begin
                     r_regs[rom_op1_data] <= acc;
@@ -152,4 +174,5 @@ module cpu_core (
             end
         end
     end
+
 endmodule

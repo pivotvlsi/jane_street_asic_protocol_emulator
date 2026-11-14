@@ -14,36 +14,52 @@ The hardware decodes instructions based on the 4-bit opcode:
 ## 1. Instruction Memory (Split-Stream Pipeline)
 
 To achieve 1-clock-cycle execution, the Instruction ROM is split into 4 physical memory blocks per CPU. The CPU fetches from all of them simultaneously:
-1. **OP RAM (128x4):** Contains only the 4-bit Opcode. Addressed by `pc_op`.
-2. **OP1 RAM (32x4):** Contains the 1st operand nibble (if needed). Addressed by `pc_op1`.
-3. **OP2 RAM (8x4):** Contains the 2nd operand nibble (if needed). Addressed by `pc_op2`.
-4. **JUMP TABLE (16x16):** Contains up to 16 absolute `{2'b00, pc_op, pc_op1, pc_op2}` target states used for branching.
+1. **OP RAM (128x4):** Contains only the 4-bit Opcode. Addressed by `pc_op` (7 bits).
+2. **OP1 RAM (64x4):** Contains the 1st operand nibble (if needed). Addressed by `pc_op1` (6 bits).
+3. **OP2 RAM (16x4):** Contains the 2nd operand nibble (if needed). Addressed by `pc_op2` (4 bits).
+4. **JUMP TABLE (16x17):** Contains up to 16 absolute `{pc_op[6:0], pc_op1[5:0], pc_op2[3:0]}` target states used for branching.
 
 When an instruction executes, the CPU automatically increments the required program counters. A 1-nibble instruction only increments `pc_op`. A 2-nibble instruction increments `pc_op` and `pc_op1`. A 3-nibble instruction increments all three.
 
 ---
 
-## 2. Required Data Registers (16 Address Space)
-We now have **8 registers** mapped out of the 16 available slots. Every data register is exactly **8 bits (1 byte) wide**, which perfectly matches the payload size of standard serial protocols like UART, SPI, and I2C.
+## 2. Register & Memory Map (16 Address Space)
+Every data register is exactly **8 bits (1 byte) wide**, which perfectly matches standard serial protocols like UART, SPI, and I2C. Addresses `0x0` through `0x3` are private execution registers, `0x4` to `0x8` access hardware peripherals, `0x9` to `0xC` access hardware-synchronized shared registers across all 6 CPUs, `0xD` and `0xE` access the **Universal Arbitrary CRC Accelerator**, and `0xF` configures 8-bit bidirectional IO.
 
-| Address (Hex) | Register Name | Description |
-| :--- | :--- | :--- |
-| `0x0` | **ACC** | Math Accumulator (Hardwired for ADD/SUB/AND/SHR/SHL/XOR). |
-| `0x1` | **B** | Secondary Math Register (Operand for math). |
-| `0x2` | **R2** | Scratch Register / Loop Counter. |
-| `0x3` | **R3** | Scratch Register. |
-| `0xA` | **SHARED_1** | Memory Mapped. Shared register across all 4 CPUs. |
-| `0xB` | **SHARED_2** | Memory Mapped. Shared register across all 4 CPUs. |
-| `0xC` | **SHARED_3** | Memory Mapped. Shared register across all 4 CPUs. |
-| `0xD` | **R6** | Scratch Register. |
-| `0xE` | **R7** | Scratch Register. |
-| `0xF` | **PIN_DIR** | Pin Direction Register (1 = Output, 0 = Input). **Read:** Returns `{pin_state, pin_dir}`. |
-| `0x4` | **TX_FIFO** | Memory Mapped. Moving data here pushes it to the SPI host. **Stalls CPU if FIFO is full.** |
-| `0x5` | **RX_FIFO** | Memory Mapped. Moving data from here pops it from the SPI host. **Stalls CPU if FIFO is empty.** |
-| `0x6` | **PIN_STATE** | Memory Mapped. Reads the physical pin voltages. |
-| `0x7` | **TIMER_L** | Lower 8-bits of the hardware timer. **Stalls CPU until the timer countdown reaches zero.** |
-| `0x8` | **TIMER_H / FLAGS** | **Write:** Starts timer countdown. **Read:** ALU Status Flags. Bit 0: Zero. Bit 1: Carry. Bits 2-5: Valid Flags for SHARED_0 to SHARED_3. |
-| `0x9` | **SHARED_0** | Shared register across all 4 CPUs. **Stalls CPU on read if data is not valid.** |
+| Address (Hex) | Register Name | Access Type | Description |
+| :--- | :--- | :--- | :--- |
+| `0x0` | **ACC** | Read / Internal | Math Accumulator. Hardwired for ADD / SUB / AND / SHR / SHL / XOR. |
+| `0x1` | **B** | Read / Write | Secondary Math Register (Operand for math). |
+| `0x2` | **R2** | Read / Internal | General-purpose Scratch Register / Loop Counter. |
+| `0x3` | **R3** | Read / Internal | General-purpose Scratch Register. |
+| `0x4` | **TX_FIFO** | Write | Moving data here pushes it to the SPI host FIFO. **Stalls CPU if FIFO is full.** |
+| `0x5` | **RX_FIFO** | Read | Moving data from here pops it from the SPI host FIFO. **Stalls CPU if FIFO is empty.** |
+| `0x6` | **PIN_STATE** | Read | Reads the external physical pin voltages (`uio_in[7:0]`). |
+| `0x7` | **TIMER_L** | Read / Write | Lower 8 bits of the hardware timer. **Stalls CPU on read until timer countdown reaches zero.** |
+| `0x8` | **STATUS_FLAGS** | Read / Write | **Write:** Loads upper timer byte and starts countdown.<br>**Read:** ALU Status Flags:<br>• Bit 0: `flag_zero`<br>• Bit 1: `flag_carry`<br>• Bit 6: `overrun_flag` (TX FIFO overrun)<br>• Bits 7, 5:2: Reserved (`0`) |
+| `0x9` | **SHARED_0** | Read / Write | Shared register across all 6 CPUs. **Stalls CPU on read if data is not valid.** |
+| `0xA` | **SHARED_1** | Read / Write | Shared register across all 6 CPUs. **Stalls CPU on read if data is not valid.** |
+| `0xB` | **SHARED_2** | Read / Write | Shared register across all 6 CPUs. **Stalls CPU on read if data is not valid.** |
+| `0xC` | **SHARED_3** | Read / Write | Shared register across all 6 CPUs. **Stalls CPU on read if data is not valid.** |
+| `0xD` | **CRC_DATA** | Read / Write | **Write:** Feeds 8 bits into Universal CRC Galois LFSR.<br>**Read:** Returns selected byte slice of current CRC remainder. |
+| `0xE` | **CRC_CTRL** | Write | **Write:** CRC Control:<br>• Bits 1:0: Byte slice select (0..3) for reading CRC remainder at `0xD`<br>• Bit 2: Trigger software re-seed |
+| `0xF` | **PIN_DIR** | Read / Write | **Write:** Sets 8-bit bidirectional pin direction (`pin_dir <= ACC[7:0]`, `1` = Output, `0` = Input).<br>**Read:** Returns current 8-bit pin direction `pin_dir[7:0]`. |
+
+---
+
+## 3. Universal Arbitrary CRC Hardware Accelerator (SPI Host Preload)
+
+To offload polynomial division, the ASIC incorporates a dedicated 32-bit Galois LFSR hardware accelerator (`\सार्वत्रिक_चक्रीय_पुनरावृत्ति`). It supports **any polynomial** (e.g. CRC-5 USB Token, CRC-16 USB Data, CRC-32 Ethernet IEEE 802.3, or custom proprietary CRCs) preloaded by the host MCU (RP2040) over SPI:
+
+### SPI Host Preload Protocol (`0x60` to `0x6E`):
+* `0x60`: **CRC Width ($W$)** (1 to 32 bits)
+* `0x61 .. 0x64`: **Divisor Polynomial ($P[31:0]$)** (Bytes 0 to 3)
+* `0x65 .. 0x68`: **Initial Seed ($I[31:0]$)** (Bytes 0 to 3)
+* `0x69 .. 0x6C`: **XOR Out Mask ($X[31:0]$)** (Bytes 0 to 3)
+* `0x6D`: **Reflection Flags** (Bit 0: `RefIn`, Bit 1: `RefOut`)
+* `0x6E`: **Re-seed Trigger** (Reloads initial seed into running accumulator)
+
+Once preloaded, any core simply executes `STORE 0xD` to feed bytes on the fly, achieving single-cycle absorption at **400 Mbps**.
 
 ---
 

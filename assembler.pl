@@ -11,6 +11,7 @@ my %opcodes = (
 my %registers = (
     "ACC" => 0, "B" => 1, "R2" => 2, "R3" => 3, "TX_FIFO" => 4, "RX_FIFO" => 5, "PIN_STATE" => 6, 
     "TIMER_L" => 7, "TIMER_H" => 8, "FLAGS" => 8, "SHARED_0" => 9, "SHARED_1" => 10, 
+    "SHARED_2" => 11, "SHARED_3" => 12, "CRC_DATA" => 13, "CRC_CTRL" => 14,
     "R4" => 11, "R5" => 12, "R6" => 13, "R7" => 14, "PIN_DIR" => 15
 );
 

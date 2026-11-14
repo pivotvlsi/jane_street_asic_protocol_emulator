@@ -23,6 +23,8 @@ project:
     - "fifo.v"
     - "timer.v"
     - "spi_slave.v"
+    - "dvitantri_shodhana.v"
+    - "sarvatrika_chakriya_punaravritti.v"
 
 pinout:
   ui[0]: "SPI CS"

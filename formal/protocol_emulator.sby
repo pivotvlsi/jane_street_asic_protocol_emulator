@@ -1,0 +1,24 @@
+[tasks]
+bmc
+prove
+
+[options]
+bmc: mode bmc
+prove: mode prove
+depth 32
+multiclock on
+
+[engines]
+bmc: smtbmc
+prove: smtbmc
+
+[script]
+read -formal -sv dvitantri_shodhana.v
+read -formal -sv fifo.v
+read -formal -sv formal_protocol_emulator.sv
+prep -top formal_protocol_emulator
+
+[files]
+../src/dvitantri_shodhana.v
+../src/fifo.v
+formal_protocol_emulator.sv

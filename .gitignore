@@ -7,3 +7,7 @@ a.out
 *_assert.vh
 scratch/
 verif_output/
+sim_build/
+sim_build_formal/
+__pycache__/
+*.pyc
