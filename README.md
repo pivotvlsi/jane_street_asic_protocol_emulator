@@ -12,8 +12,8 @@ This "software-defined peripheral" approach provides immense flexibility, allowi
 
 ## Key Features
 *   **6-Core Architecture:** 6 independent 8-bit accumulator cores running in parallel at 50 MHz.
-*   **Two-Wire Debug Controller (`dvitantri_shodhana`):** Hardware debug tap to halt, resume, and read all internal registers (ACC, B, FLAGS, PC0, PC1, PC2, PIN_DIR, PIN_OUT) via synchronous serial frames (`ui_in[3]`, `ui_in[2]`, `uo_out[7]`).
-*   **8-Bit Bidirectional Protocol Bus (`uio[7:0]`):** Clean direction-masked OR-multiplexed physical pin interface across all 6 cores.
+*   **Two-Wire Debug Controller (`dvitantri_shodhana`):** Hardware debug tap to run, halt, resume, and read all internal registers (ACC, B, FLAGS, PC0, PC1, PC2, PIN_DIR, PIN_OUT) across all 6 cores via synchronous serial frames (`ui_in[3]`, `ui_in[2]`, `uo_out[7]`).
+*   **8-Bit Bidirectional Protocol Bus (`uio[7:0]`):** Clean direction-masked OR-multiplexed physical pin interface across all 6 cores, with `uio[3:0]` active for competition protocols and `uio[7:4]` reserved.
 *   **Zero Dedicated Hardware Peripherals:** All protocols are 100% bit-banged in software firmware.
 *   **Dynamic Instruction RAM:** Firmware routines are dynamically loaded and hot-swapped into on-chip RAM over SPI by the host MCU (RP2040).
 *   **Multi-Core Pipelining & Collaboration:** Cores can snoop the same wire simultaneously (e.g., Core 0 sampling UART data while Core 1 handles deserialization and Core 3 evaluates Parity in real-time; or Core 0 and Core 1 driving zero-skew differential signals for Ethernet TX+ / TX-).
@@ -23,7 +23,7 @@ This "software-defined peripheral" approach provides immense flexibility, allowi
     *   **I2C:** Master TX/RX, Slave TX/RX with hardware clock stretching support.
     *   **USB 1.1 Low-Speed (1.5 Mbps):** 3-core pipelined transmission with automated hardware bit-stuffing, NRZI encoding, and EOP generation.
     *   **10BASE-T Ethernet (10 Mbps):** 4-core zero-skew differential transmission and 2-core Manchester edge decoding.
-*   **Hardware FIFOs & Status Flags:** 8-byte RX and TX FIFOs per core with real-time overrun detection mapped to the `STATUS_FLAGS` register (Bit 6) and dedicated status output pins.
+*   **Hardware FIFOs & Global Interrupt:** 8-byte RX and TX FIFOs per core with real-time overrun detection mapped to the `STATUS_FLAGS` register (Bit 6) and a unified global host interrupt on `uo_out[1]`.
 
 ## Physical Design & Tapeout Metrics (IHP 130nm CMOS5L)
 
@@ -67,7 +67,8 @@ To understand the architecture and how to run the verification suite, please ref
 3.  **[ISA Specification](isa_spec.md)**: The complete instruction set for the custom split-stream CPU.
 4.  **[Pin Mapping](pin_mapping.md)**: The physical pinout mapping for the Tiny Tapeout ASIC framework.
 5.  **[Verification Guide](verif_readme.md)**: Instructions on how to compile the assembly firmware and run the automated testbenches.
-6.  **[Limitations & Constraints](limitations.md)**: An honest look at the architectural bottlenecks, software debugging complexities, and theoretical maximum throughput.
+6.  **[Formal Verification & Verification Architecture](formal_verification.md)**: Details the formal verification methodology (SymbiYosys, SVA), mathematical invariants (FIFO safety, Two-Wire Debugger isolation, GPIO contention), and regression matrix.
+7.  **[Limitations & Constraints](limitations.md)**: An honest look at the architectural bottlenecks, software debugging complexities, and theoretical maximum throughput.
 
 ---
 *Built with silicon passion by [PivotVLSI](https://pivotvlsi.in/)*

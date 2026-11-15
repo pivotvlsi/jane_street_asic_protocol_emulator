@@ -1,90 +1,139 @@
-<mxfile host="Electron" modified="2023-10-17T00:00:00.000Z" agent="Mozilla/5.0" version="21.1.2" type="device">
-  <diagram id="emulator_arch" name="Architecture">
-    <mxGraphModel dx="1200" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1000" math="0" shadow="0">
+<mxfile host="Electron" modified="2026-11-15T04:20:00.000Z" agent="Mozilla/5.0" version="21.1.2" type="device">
+  <diagram id="emulator_arch" name="6-Core Architecture">
+    <mxGraphModel dx="1400" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1150" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         
-        <!-- Tiny Tapeout Chip Boundary -->
-        <mxCell id="chip_bound" value="TINY TAPEOUT CHIP BOUNDARY" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=top;fillColor=#f5f5f5;fontStyle=1;fontSize=14;" vertex="1" parent="1">
-          <mxGeometry x="150" y="80" width="600" height="850" as="geometry" />
+        <!-- Tiny Tapeout Chip Boundary (8x4 Tile Footprint) -->
+        <mxCell id="chip_bound" value="TINY TAPEOUT 8x4 CHIP BOUNDARY (IHP 130nm SG13CMOS5L @ 50 MHz)" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=top;fillColor=#f8f9fa;strokeColor=#495057;strokeWidth=2;fontStyle=1;fontSize=15;fontColor=#212529;" vertex="1" parent="1">
+          <mxGeometry x="150" y="70" width="1020" height="980" as="geometry" />
         </mxCell>
         
-        <!-- SPI Host -->
-        <mxCell id="spi_host" value="External SPI Host" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="350" y="10" width="200" height="40" as="geometry" />
+        <!-- External SPI / Debug Host -->
+        <mxCell id="spi_host" value="External RP2040 Host&#10;(SPI Master &amp; Two-Wire Debug Master)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#cce5ff;strokeColor=#b8daff;fontStyle=1;fontSize=13;fontColor=#004085;" vertex="1" parent="1">
+          <mxGeometry x="460" y="10" width="380" height="45" as="geometry" />
         </mxCell>
 
-        <!-- Instruction RAM -->
-        <mxCell id="inst_ram" value="Hardware SPI Slave&#10;+ FIFOs + Inst RAM" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="350" y="150" width="200" height="80" as="geometry" />
+        <!-- Hardware Infrastructure Blocks -->
+        <!-- SPI Slave & RAM Subsystem -->
+        <mxCell id="inst_ram" value="Hardware SPI Slave Interface&#10;• Fast DMA RAM Loader (Cores 0..5)&#10;• Split-Stream Instruction ROMs (OP, OP1, OP2)&#10;• Dedicated RX / TX Hardware FIFOs" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d4edda;strokeColor=#c3e6cb;fontStyle=1;fontColor=#155724;align=center;" vertex="1" parent="1">
+          <mxGeometry x="220" y="130" width="380" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Two-Wire Debug Controller -->
+        <mxCell id="dbg_ctrl" value="Two-Wire Debug Controller&#10;(dvitantri_shodhana)&#10;• Universal Core Run / Halt / Resume Control (Cores 0..5)&#10;• Live Debug Halt &amp; Resume (dbg_halt[5:0])&#10;• Non-Intrusive Tap: ACC, B, Flags, R, PC, PIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3cd;strokeColor=#ffeeba;fontStyle=1;fontColor=#856404;align=center;" vertex="1" parent="1">
+          <mxGeometry x="640" y="130" width="340" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Hardware Universal CRC Accelerator -->
+        <mxCell id="crc_engine" value="Hardware Universal CRC Engine&#10;(sarvatrika_chakriya_punaravritti)&#10;• Configurable 8/16/32-bit Galois LFSR Engine&#10;• Hardware Offload at 0xD (CRC_DATA) / 0xE (CRC_CTRL)&#10;• 1 Byte / Cycle Execution • Ethernet &amp; USB Polynomials" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1ecf1;strokeColor=#bee5eb;fontStyle=1;fontColor=#0c5460;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="250" width="540" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ================= 6 ACCUMULATOR CPU CORES ================= -->
+        <!-- Core 0 -->
+        <mxCell id="cpu0" value="CPU 0 (Core 0)&#10;• 1-Cycle Accumulator Core&#10;• RUN via Two-Wire Debugger (dbg_halt[0])&#10;• Hardware ALU (Add, Sub, Logic, Shift)&#10;• Direct Two-Wire Debugger Tap&#10;• TX FIFO Push / RX FIFO Pull" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe8cc;strokeColor=#ffa94d;strokeWidth=2;fontStyle=1;fontColor=#d9480f;" vertex="1" parent="1">
+          <mxGeometry x="200" y="370" width="220" height="150" as="geometry" />
         </mxCell>
         
-        <mxCell id="pdata_cpu" value="CPU 0&#10;(Accumulator Core)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="200" y="300" width="160" height="180" as="geometry" />
+        <!-- Core 1 -->
+        <mxCell id="cpu1" value="CPU 1 (Core 1)&#10;• 1-Cycle Accumulator Core&#10;• RUN via Two-Wire Debugger (dbg_halt[1])&#10;• Hardware Timer (TIMER_L / H)&#10;• Dynamic Baud &amp; Bit-Timer Reload&#10;• Direct Two-Wire Debugger Tap" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe8cc;strokeColor=#ffa94d;strokeWidth=2;fontStyle=1;fontColor=#d9480f;" vertex="1" parent="1">
+          <mxGeometry x="540" y="370" width="220" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- Core 2 -->
+        <mxCell id="cpu2" value="CPU 2 (Core 2)&#10;• 1-Cycle Accumulator Core&#10;• RUN via Two-Wire Debugger (dbg_halt[2])&#10;• Protocol Encoder / Bit Stuffer&#10;• Dynamic Shared Inter-Core FIFO&#10;• Direct Two-Wire Debugger Tap" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe8cc;strokeColor=#ffa94d;strokeWidth=2;fontStyle=1;fontColor=#d9480f;" vertex="1" parent="1">
+          <mxGeometry x="880" y="370" width="220" height="150" as="geometry" />
         </mxCell>
         
-        <mxCell id="pdir_cpu" value="CPU 1&#10;(Accumulator Core)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="540" y="300" width="160" height="180" as="geometry" />
+        <!-- Core 3 -->
+        <mxCell id="cpu3" value="CPU 3 (Core 3)&#10;• 1-Cycle Accumulator Core&#10;• RUN via Two-Wire Debugger (dbg_halt[3])&#10;• Packet Serializer &amp; Framing Engine&#10;• Direct Two-Wire Debugger Tap&#10;• Hardware Jump Table Integration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe8cc;strokeColor=#ffa94d;strokeWidth=2;fontStyle=1;fontColor=#d9480f;" vertex="1" parent="1">
+          <mxGeometry x="200" y="650" width="220" height="150" as="geometry" />
         </mxCell>
 
-        <mxCell id="cpu2" value="CPU 2&#10;(Accumulator Core)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="200" y="520" width="160" height="180" as="geometry" />
+        <!-- Core 4 -->
+        <mxCell id="cpu4" value="CPU 4 (Core 4)&#10;• 1-Cycle Accumulator Core&#10;• RUN via Two-Wire Debugger (dbg_halt[4])&#10;• USB RX Sampler / Manchester Edge&#10;• Center-Sampling Line Monitor&#10;• Direct Two-Wire Debugger Tap" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe8cc;strokeColor=#ffa94d;strokeWidth=2;fontStyle=1;fontColor=#d9480f;" vertex="1" parent="1">
+          <mxGeometry x="540" y="650" width="220" height="150" as="geometry" />
         </mxCell>
+
+        <!-- Core 5 -->
+        <mxCell id="cpu5" value="CPU 5 (Core 5)&#10;• 1-Cycle Accumulator Core&#10;• RUN via Two-Wire Debugger (dbg_halt[5])&#10;• NRZI Decoder &amp; Bit-Unstuffer&#10;• Real-Time Protocol Pipeline Stage&#10;• Direct Two-Wire Debugger Tap" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe8cc;strokeColor=#ffa94d;strokeWidth=2;fontStyle=1;fontColor=#d9480f;" vertex="1" parent="1">
+          <mxGeometry x="880" y="650" width="220" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- Shared Inter-Core Pipeline Bus (0x9 to 0xE) -->
+        <mxCell id="shared_bus" value="6-CHANNEL SHARED PIPELINE REGISTERS (0x9 .. 0xE)&#10;SHARED_0 | SHARED_1 | SHARED_2 | SHARED_3 | SHARED_4 | SHARED_5&#10;• Automatic Hardware Blocking Stall Handshake (mem_stall) • Zero-Cycle Inter-Core Data Handoff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e2d9f3;strokeColor=#d0bfff;strokeWidth=2;fontStyle=1;fontColor=#5f3dc4;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="550" width="900" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ================= PHYSICAL IO INTERFACE ================= -->
+        <!-- UI_IN (8-bit Inputs - Left) -->
+        <mxCell id="ui_grp" value="UI_IN (8 Dedicated Inputs)&#10;[All Cores 0..5 Controlled via DBG]" style="swimlane;fontStyle=1;align=center;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;startSize=35;" vertex="1" parent="1">
+          <mxGeometry x="10" y="130" width="125" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="in0" value="[0] SPI CS" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="ui_grp"><mxGeometry x="8" y="40" width="105" height="26" as="geometry" /></mxCell>
+        <mxCell id="in1" value="[1] SPI SCLK" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="ui_grp"><mxGeometry x="8" y="73" width="105" height="26" as="geometry" /></mxCell>
+        <mxCell id="in2" value="[2] MOSI/DIN" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="ui_grp"><mxGeometry x="8" y="106" width="105" height="26" as="geometry" /></mxCell>
+        <mxCell id="in3" value="[3] DBG SCLK" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="ui_grp"><mxGeometry x="8" y="139" width="105" height="26" as="geometry" /></mxCell>
+        <mxCell id="in4" value="[4] Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="ui_grp"><mxGeometry x="8" y="172" width="105" height="26" as="geometry" /></mxCell>
+        <mxCell id="in5" value="[5] Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="ui_grp"><mxGeometry x="8" y="205" width="105" height="26" as="geometry" /></mxCell>
+        <mxCell id="in6" value="[6] Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="ui_grp"><mxGeometry x="8" y="238" width="105" height="26" as="geometry" /></mxCell>
+        <mxCell id="in7" value="[7] Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="ui_grp"><mxGeometry x="8" y="271" width="105" height="26" as="geometry" /></mxCell>
+
+        <!-- UO_OUT (8-bit Outputs - Right) -->
+        <mxCell id="uo_grp" value="UO_OUT (8 Dedicated Outputs)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;startSize=25;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="130" width="120" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="out0" value="[0] SPI MISO" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;" vertex="1" parent="uo_grp"><mxGeometry x="10" y="30" width="100" height="28" as="geometry" /></mxCell>
+        <mxCell id="out1" value="[1] INTERRUPT&#10;(Global Flag OR)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe3e3;strokeColor=#e03131;fontStyle=1;fontColor=#c92a2a;" vertex="1" parent="uo_grp"><mxGeometry x="10" y="65" width="100" height="28" as="geometry" /></mxCell>
+        <mxCell id="out2" value="[2] Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="uo_grp"><mxGeometry x="10" y="100" width="100" height="28" as="geometry" /></mxCell>
+        <mxCell id="out3" value="[3] Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="uo_grp"><mxGeometry x="10" y="135" width="100" height="28" as="geometry" /></mxCell>
+        <mxCell id="out4" value="[4] Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="uo_grp"><mxGeometry x="10" y="170" width="100" height="28" as="geometry" /></mxCell>
+        <mxCell id="out5" value="[5] Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="uo_grp"><mxGeometry x="10" y="205" width="100" height="28" as="geometry" /></mxCell>
+        <mxCell id="out6" value="[6] Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="uo_grp"><mxGeometry x="10" y="240" width="100" height="28" as="geometry" /></mxCell>
+        <mxCell id="out7" value="[7] DBG_DOUT" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="uo_grp"><mxGeometry x="10" y="275" width="100" height="28" as="geometry" /></mxCell>
+
+        <!-- UIO BIDIRECTIONAL PINS (8-bit Full Bus - Bottom) -->
+        <mxCell id="uio_grp" value="UIO[7:0] BIDIRECTIONAL PROTOCOL BUS (Multi-Core Arbitrated with Safe Output Masking)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;fillColor=#d5e8d4;strokeColor=#82b366;startSize=25;" vertex="1" parent="1">
+          <mxGeometry x="250" y="850" width="800" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="uio0" value="uio[0]&#10;D+ / TX / SDA" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="uio_grp"><mxGeometry x="20" y="45" width="85" height="50" as="geometry" /></mxCell>
+        <mxCell id="uio1" value="uio[1]&#10;D- / RX / SCL" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="uio_grp"><mxGeometry x="115" y="45" width="85" height="50" as="geometry" /></mxCell>
+        <mxCell id="uio2" value="uio[2]&#10;ETH RX / IO2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="uio_grp"><mxGeometry x="210" y="45" width="85" height="50" as="geometry" /></mxCell>
+        <mxCell id="uio3" value="uio[3]&#10;SPI CS / IO3" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="uio_grp"><mxGeometry x="305" y="45" width="85" height="50" as="geometry" /></mxCell>
+        <mxCell id="uio4" value="uio[4]&#10;Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="uio_grp"><mxGeometry x="400" y="45" width="85" height="50" as="geometry" /></mxCell>
+        <mxCell id="uio5" value="uio[5]&#10;Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="uio_grp"><mxGeometry x="495" y="45" width="85" height="50" as="geometry" /></mxCell>
+        <mxCell id="uio6" value="uio[6]&#10;Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="uio_grp"><mxGeometry x="590" y="45" width="85" height="50" as="geometry" /></mxCell>
+        <mxCell id="uio7" value="uio[7]&#10;Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f1f3f5;strokeColor=#adb5bd;fontColor=#868e96;" vertex="1" parent="uio_grp"><mxGeometry x="685" y="45" width="85" height="50" as="geometry" /></mxCell>
+
+        <!-- Connecting Interconnect Edges -->
+        <mxCell id="edge_host_spi" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#0056b3;" edge="1" parent="1" source="spi_host" target="inst_ram"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_host_dbg" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#e67700;" edge="1" parent="1" source="spi_host" target="dbg_ctrl"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_dbg_dout" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#d6b656;" edge="1" parent="1" source="dbg_ctrl" target="out7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_spi_miso" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#d6b656;" edge="1" parent="1" source="inst_ram" target="out0"><mxGeometry relative="1" as="geometry" /></mxCell>
         
-        <mxCell id="cpu3" value="CPU 3&#10;(Accumulator Core)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="540" y="520" width="160" height="180" as="geometry" />
-        </mxCell>
-
-        <!-- Shared Registers -->
-        <mxCell id="shared_regs" value="SHARED REGISTERS&#10;(SHARED_0, SHARED_1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="370" y="460" width="160" height="60" as="geometry" />
-        </mxCell>
-
-        <!-- ALL 8 UI_IN PINS (Left side) -->
-        <mxCell id="in0" value="ui_in[0]: CS" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="20" y="150" width="90" height="30" as="geometry" /></mxCell>
-        <mxCell id="in1" value="ui_in[1]: SCLK" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="20" y="190" width="90" height="30" as="geometry" /></mxCell>
-        <mxCell id="in2" value="ui_in[2]: MOSI" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="20" y="230" width="90" height="30" as="geometry" /></mxCell>
-        <mxCell id="in3" value="ui_in[3]: Unused" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="20" y="270" width="100" height="30" as="geometry" /></mxCell>
-        <mxCell id="in4" value="ui_in[4]: RUN0" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="20" y="310" width="100" height="30" as="geometry" /></mxCell>
-        <mxCell id="in5" value="ui_in[5]: RUN1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="20" y="350" width="100" height="30" as="geometry" /></mxCell>
-        <mxCell id="in6" value="ui_in[6]: RUN2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="20" y="390" width="100" height="30" as="geometry" /></mxCell>
-        <mxCell id="in7" value="ui_in[7]: RUN3" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="20" y="430" width="100" height="30" as="geometry" /></mxCell>
-        <!-- ALL 8 UO_OUT PINS (Right side) -->
-        <mxCell id="out0" value="uo_out[0]: MISO" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="800" y="150" width="100" height="30" as="geometry" /></mxCell>
-
-
-        <!-- ALL 8 UIO PINS (Bottom right) -->
-        <mxCell id="uio0" value="uio[0]: Bidi 0" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="380" y="740" width="90" height="30" as="geometry" /></mxCell>
-        <mxCell id="uio1" value="uio[1]: Bidi 1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="380" y="780" width="90" height="30" as="geometry" /></mxCell>
-        <mxCell id="uio2" value="uio[2]: Bidi 2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="380" y="820" width="90" height="30" as="geometry" /></mxCell>
-        <mxCell id="uio3" value="uio[3]: Bidi 3" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="380" y="860" width="90" height="30" as="geometry" /></mxCell>
-
-
-        <!-- Edges: Inputs to RAM -->
-        <mxCell id="e_in0" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="in0" target="inst_ram"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="e_in1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="in1" target="inst_ram"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="e_in2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="in2" target="inst_ram"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Two-Wire Debugger Control Lines to all Cores (RUN/HALT) -->
+        <mxCell id="edge_dbg_c0" value="RUN / HALT" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=1.5;strokeColor=#e67700;dashed=1;fontStyle=1;fontSize=10;fontColor=#b06000;" edge="1" parent="1" source="dbg_ctrl" target="cpu0"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_dbg_c1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=1.5;strokeColor=#e67700;dashed=1;" edge="1" parent="1" source="dbg_ctrl" target="cpu1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_dbg_c2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=1.5;strokeColor=#e67700;dashed=1;" edge="1" parent="1" source="dbg_ctrl" target="cpu2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_dbg_c3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=1.5;strokeColor=#e67700;dashed=1;" edge="1" parent="1" source="dbg_ctrl" target="cpu3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_dbg_c4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=1.5;strokeColor=#e67700;dashed=1;" edge="1" parent="1" source="dbg_ctrl" target="cpu4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_dbg_c5" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=1.5;strokeColor=#e67700;dashed=1;" edge="1" parent="1" source="dbg_ctrl" target="cpu5"><mxGeometry relative="1" as="geometry" /></mxCell>
         
-        <!-- Edge: RAM to Out0 -->
-        <mxCell id="e_out0" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="inst_ram" target="out0"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <!-- Shared Bus Connections -->
+        <mxCell id="edge_c0_sb" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#5f3dc4;" edge="1" parent="1" source="cpu0" target="shared_bus"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_c1_sb" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#5f3dc4;" edge="1" parent="1" source="cpu1" target="shared_bus"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_c2_sb" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#5f3dc4;" edge="1" parent="1" source="cpu2" target="shared_bus"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_c3_sb" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#5f3dc4;" edge="1" parent="1" source="shared_bus" target="cpu3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_c4_sb" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#5f3dc4;" edge="1" parent="1" source="shared_bus" target="cpu4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_c5_sb" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#5f3dc4;" edge="1" parent="1" source="shared_bus" target="cpu5"><mxGeometry relative="1" as="geometry" /></mxCell>
 
-        <!-- Edges: GP Inputs to PDATA -->
-        <mxCell id="e_run0" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="in4" target="pdata_cpu"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="e_run1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="in5" target="pdir_cpu"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="e_run2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="in6" target="cpu2"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="e_run3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="in7" target="cpu3"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <!-- Edges: PDATA to GP Outputs -->
+        <!-- UIO Multi-Core Drive Connections -->
+        <mxCell id="edge_c3_uio" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#2b8a3e;" edge="1" parent="1" source="cpu3" target="uio_grp"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_c4_uio" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#2b8a3e;" edge="1" parent="1" source="cpu4" target="uio_grp"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="edge_c5_uio" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeWidth=2;strokeColor=#2b8a3e;" edge="1" parent="1" source="cpu5" target="uio_grp"><mxGeometry relative="1" as="geometry" /></mxCell>
 
-
-        <!-- Edges: PDATA to UIO -->
-        <mxCell id="e_pu_0" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.25;exitY=1;" edge="1" parent="1" source="pdata_cpu" target="uio0"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="e_pu_7" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.75;exitY=1;" edge="1" parent="1" source="pdata_cpu" target="uio3"><mxGeometry relative="1" as="geometry" /></mxCell>
-
-        <!-- Edges: PDIR to UIO -->
-        <mxCell id="e_di_0" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.25;exitY=1;" edge="1" parent="1" source="pdir_cpu" target="uio0"><mxGeometry relative="1" as="geometry" /></mxCell>
-        <mxCell id="e_di_7" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.75;exitY=1;" edge="1" parent="1" source="pdir_cpu" target="uio3"><mxGeometry relative="1" as="geometry" /></mxCell>
-        
       </root>
     </mxGraphModel>
   </diagram>

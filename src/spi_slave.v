@@ -17,7 +17,7 @@ module spi_slave (
     output reg [5:0]  cpu0_ram_op1_addr,
     output reg [3:0]  cpu0_ram_op1_wdata,
     output reg        cpu0_ram_op1_we,
-    output reg [2:0]  cpu0_ram_op2_addr,
+    output reg [3:0]  cpu0_ram_op2_addr,
     output reg [3:0]  cpu0_ram_op2_wdata,
     output reg        cpu0_ram_op2_we,
     output reg [3:0]  cpu0_jmp_addr,
@@ -35,7 +35,7 @@ module spi_slave (
     output reg [5:0]  cpu1_ram_op1_addr,
     output reg [3:0]  cpu1_ram_op1_wdata,
     output reg        cpu1_ram_op1_we,
-    output reg [2:0]  cpu1_ram_op2_addr,
+    output reg [3:0]  cpu1_ram_op2_addr,
     output reg [3:0]  cpu1_ram_op2_wdata,
     output reg        cpu1_ram_op2_we,
     output reg [3:0]  cpu1_jmp_addr,
@@ -53,7 +53,7 @@ module spi_slave (
     output reg [5:0]  cpu2_ram_op1_addr,
     output reg [3:0]  cpu2_ram_op1_wdata,
     output reg        cpu2_ram_op1_we,
-    output reg [2:0]  cpu2_ram_op2_addr,
+    output reg [3:0]  cpu2_ram_op2_addr,
     output reg [3:0]  cpu2_ram_op2_wdata,
     output reg        cpu2_ram_op2_we,
     output reg [3:0]  cpu2_jmp_addr,
@@ -71,7 +71,7 @@ module spi_slave (
     output reg [5:0]  cpu3_ram_op1_addr,
     output reg [3:0]  cpu3_ram_op1_wdata,
     output reg        cpu3_ram_op1_we,
-    output reg [2:0]  cpu3_ram_op2_addr,
+    output reg [3:0]  cpu3_ram_op2_addr,
     output reg [3:0]  cpu3_ram_op2_wdata,
     output reg        cpu3_ram_op2_we,
     output reg [3:0]  cpu3_jmp_addr,
@@ -90,7 +90,7 @@ module spi_slave (
     output reg [5:0]  cpu4_ram_op1_addr,
     output reg [3:0]  cpu4_ram_op1_wdata,
     output reg        cpu4_ram_op1_we,
-    output reg [2:0]  cpu4_ram_op2_addr,
+    output reg [3:0]  cpu4_ram_op2_addr,
     output reg [3:0]  cpu4_ram_op2_wdata,
     output reg        cpu4_ram_op2_we,
     output reg [3:0]  cpu4_jmp_addr,
@@ -109,7 +109,7 @@ module spi_slave (
     output reg [5:0]  cpu5_ram_op1_addr,
     output reg [3:0]  cpu5_ram_op1_wdata,
     output reg        cpu5_ram_op1_we,
-    output reg [2:0]  cpu5_ram_op2_addr,
+    output reg [3:0]  cpu5_ram_op2_addr,
     output reg [3:0]  cpu5_ram_op2_wdata,
     output reg        cpu5_ram_op2_we,
     output reg [3:0]  cpu5_jmp_addr,
@@ -226,12 +226,12 @@ module spi_slave (
                             is_cmd_phase <= 0;
                             is_jmp_low <= 0;
                             // Reset pointers
-                            cpu0_ram_op_addr <= 7'h7F; cpu0_ram_op1_addr <= 6'h3F; cpu0_ram_op2_addr <= 3'h7; cpu0_jmp_addr <= 4'hF;
-                            cpu1_ram_op_addr <= 7'h7F; cpu1_ram_op1_addr <= 6'h3F; cpu1_ram_op2_addr <= 3'h7; cpu1_jmp_addr <= 4'hF;
-                            cpu2_ram_op_addr <= 7'h7F; cpu2_ram_op1_addr <= 6'h3F; cpu2_ram_op2_addr <= 3'h7; cpu2_jmp_addr <= 4'hF;
-                            cpu3_ram_op_addr <= 7'h7F; cpu3_ram_op1_addr <= 6'h3F; cpu3_ram_op2_addr <= 3'h7; cpu3_jmp_addr <= 4'hF;
-                            cpu4_ram_op_addr <= 7'h7F; cpu4_ram_op1_addr <= 6'h3F; cpu4_ram_op2_addr <= 3'h7; cpu4_jmp_addr <= 4'hF;
-                            cpu5_ram_op_addr <= 7'h7F; cpu5_ram_op1_addr <= 6'h3F; cpu5_ram_op2_addr <= 3'h7; cpu5_jmp_addr <= 4'hF;
+                            cpu0_ram_op_addr <= 7'h7F; cpu0_ram_op1_addr <= 6'h3F; cpu0_ram_op2_addr <= 4'hF; cpu0_jmp_addr <= 4'hF;
+                            cpu1_ram_op_addr <= 7'h7F; cpu1_ram_op1_addr <= 6'h3F; cpu1_ram_op2_addr <= 4'hF; cpu1_jmp_addr <= 4'hF;
+                            cpu2_ram_op_addr <= 7'h7F; cpu2_ram_op1_addr <= 6'h3F; cpu2_ram_op2_addr <= 4'hF; cpu2_jmp_addr <= 4'hF;
+                            cpu3_ram_op_addr <= 7'h7F; cpu3_ram_op1_addr <= 6'h3F; cpu3_ram_op2_addr <= 4'hF; cpu3_jmp_addr <= 4'hF;
+                            cpu4_ram_op_addr <= 7'h7F; cpu4_ram_op1_addr <= 6'h3F; cpu4_ram_op2_addr <= 4'hF; cpu4_jmp_addr <= 4'hF;
+                            cpu5_ram_op_addr <= 7'h7F; cpu5_ram_op1_addr <= 6'h3F; cpu5_ram_op2_addr <= 4'hF; cpu5_jmp_addr <= 4'hF;
                         end else begin
                             case (cmd_byte)
                                 // CPU 0

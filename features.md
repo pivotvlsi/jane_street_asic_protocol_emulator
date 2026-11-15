@@ -16,8 +16,8 @@ The **6-Core Protocol Emulator** replaces rigid fixed-function hardware macros w
 - **Hardware Acceleration:**
   - **Universal CRC Accelerator (`सार्वत्रिक_चक्रीय_पुनरावृत्ति`):** Supports arbitrary polynomials from CRC-5 to CRC-32 (Galois parallel LFSR, 1 byte/cycle throughput, zero CPU stalls).
   - **Hardware Timers:** 16-bit countdown timers (`TIMER_L` at `0x7`, `TIMER_H` at `0x8`) with hardware-stalled exact cycle precision.
-  - **Asynchronous FIFOs:** 8-byte RX and TX FIFOs per core with live status monitoring on physical pins (`uo_out[6:1]`) and overrun detection flags (`STATUS_FLAGS[6]`).
-- **Real-Time Debug Tap (`द्वितन्त्री शोधन` / Two-Wire Debug):** Synchronous serial interface (`ui_in[3]`, `ui_in[2]`, `uo_out[7]`) for independent core halting, single-stepping, and reading of execution state (ACC, B, FLAGS, PC0, PC1, PC2, PIN_DIR, PIN_OUT).
+  - **Asynchronous FIFOs:** 8-byte RX and TX FIFOs per core with global interrupt notification on `uo_out[1]` and overrun detection flags (`STATUS_FLAGS[6]`).
+- **Real-Time Debug Tap (`द्वितन्त्री शोधन` / Two-Wire Debug):** Synchronous serial interface (`ui_in[3]`, `ui_in[2]`, `uo_out[7]`) for independent core run, halt, single-stepping, and reading of execution state (ACC, B, FLAGS, PC0, PC1, PC2, PIN_DIR, PIN_OUT) across all 6 cores.
 
 ---
 

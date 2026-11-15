@@ -47,10 +47,9 @@ async def test_reset_and_alive(dut):
     await start_clock(dut)
     await reset_dut(dut)
 
-    # Cores 0..3 FIFOs should start empty
-    # uo_out[1..4] = rx_empty, uo_out[5..6] = tx_empty
-    assert (int(dut.uo_out.value) & 0x02) != 0, "Core 0 RX should be empty"
-    assert (int(dut.uo_out.value) & 0x04) != 0, "Core 1 RX should be empty"
+    # Global interrupt uo_out[1] should start low (no pending event flags)
+    assert ((int(dut.uo_out.value) >> 1) & 1) == 0, "Global interrupt should be low on reset"
+    assert ((int(dut.uo_out.value) >> 2) & 0x1F) == 0, "Unused output pins uo_out[6:2] must be 0"
     dut._log.info("ASIC Boot & Reset state verified successfully.")
 
 
@@ -133,9 +132,9 @@ async def test_spi_slave_host_interface_streaming(dut):
     dut.ui_in.value = int(dut.ui_in.value) | 0x01
     await Timer(200, unit="ns")
 
-    # Core 0 RX FIFO should now not be empty (uo_out[1] == 0)
-    rx0_empty = (int(dut.uo_out.value) >> 1) & 1
-    assert rx0_empty == 0, "Core 0 RX FIFO should contain streamed byte"
+    # Global interrupt uo_out[1] should assert high due to RX FIFO data arriving
+    assert ((int(dut.uo_out.value) >> 1) & 1) == 1, "Global interrupt uo_out[1] should trigger on FIFO data"
+    assert dut.rx0.empty.value == 0, "Core 0 RX FIFO should contain streamed byte"
     dut._log.info("SPI Slave streaming to Core 0 FIFO verified.")
 
 
@@ -153,13 +152,10 @@ async def test_multi_core_fifo_isolation(dut):
     dut.ui_in.value = int(dut.ui_in.value) | 0x01
     await Timer(200, unit="ns")
 
-    # Core 1 RX FIFO has byte (uo_out[2] == 0)
-    rx1_empty = (int(dut.uo_out.value) >> 2) & 1
-    # Core 0 RX FIFO remains empty (uo_out[1] == 1)
-    rx0_empty = (int(dut.uo_out.value) >> 1) & 1
-
-    assert rx1_empty == 0, "Core 1 RX FIFO must have received byte"
-    assert rx0_empty == 1, "Core 0 RX FIFO must remain empty (no leakage)"
+    # Core 1 RX FIFO has byte, Core 0 RX FIFO remains empty
+    assert dut.rx1.empty.value == 0, "Core 1 RX FIFO must have received byte"
+    assert dut.rx0.empty.value == 1, "Core 0 RX FIFO must remain empty (no leakage)"
+    assert ((int(dut.uo_out.value) >> 1) & 1) == 1, "Global interrupt triggers on Core 1 RX FIFO data"
     dut._log.info("Multi-core FIFO channel isolation verified.")
 
 

@@ -17,21 +17,22 @@ This document specifies the exact physical pinout and signal routing for the **6
 | `ui_in[1]` | `SPI_SCLK` | Input | Hardware SPI Slave | High-Speed SPI Clock from host MCU (RP2040) |
 | `ui_in[2]` | `SPI_MOSI / DBG_DIN` | Input | SPI Slave & Debug Controller | Master-Out-Slave-In data line / Two-Wire Debug Serial Data In |
 | `ui_in[3]` | `DBG_SCLK` | Input | Two-Wire Debug Controller | Dedicated Serial Clock for Two-Wire Debugger (`dvitantri_shodhana`) |
-| `ui_in[4]` | `CPU0_RUN` | Input | CPU Core 0 | Execution Enable (1 = Run, 0 = Halt / Program Mode) |
-| `ui_in[5]` | `CPU1_RUN` | Input | CPU Core 1 | Execution Enable (1 = Run, 0 = Halt / Program Mode) |
-| `ui_in[6]` | `CPU2_RUN` | Input | CPU Core 2 | Execution Enable (1 = Run, 0 = Halt / Program Mode) |
-| `ui_in[7]` | `CPU3_RUN` | Input | CPU Core 3 | Execution Enable (1 = Run, 0 = Halt / Program Mode) |
+| `ui_in[4]` | `Unused` | Input | Top-level Module | Unused (tied off internally) |
+| `ui_in[5]` | `Unused` | Input | Top-level Module | Unused (tied off internally) |
+| `ui_in[6]` | `Unused` | Input | Top-level Module | Unused (tied off internally) |
+| `ui_in[7]` | `Unused` | Input | Top-level Module | Unused (tied off internally) |
 | **Dedicated Outputs (`uo_out[7:0]`)** | | | | |
 | `uo_out[0]` | `SPI_MISO` | Output | Hardware SPI Slave | Master-In-Slave-Out line for reading back CPU RX FIFOs |
-| `uo_out[1]` | `CPU0_RX_EMPTY` | Output | Core 0 RX FIFO | 1 = RX FIFO Empty, 0 = Data available to read |
-| `uo_out[2]` | `CPU1_RX_EMPTY` | Output | Core 1 RX FIFO | 1 = RX FIFO Empty, 0 = Data available to read |
-| `uo_out[3]` | `CPU2_RX_EMPTY` | Output | Core 2 RX FIFO | 1 = RX FIFO Empty, 0 = Data available to read |
-| `uo_out[4]` | `CPU3_RX_EMPTY` | Output | Core 3 RX FIFO | 1 = RX FIFO Empty, 0 = Data available to read |
-| `uo_out[5]` | `CPU0_TX_EMPTY` | Output | Core 0 TX FIFO | 1 = TX FIFO Empty, 0 = Data pending transmission |
-| `uo_out[6]` | `CPU1_TX_EMPTY` | Output | Core 1 TX FIFO | 1 = TX FIFO Empty, 0 = Data pending transmission |
+| `uo_out[1]` | `INTERRUPT` | Output | Global Flag OR | Global Interrupt Notification (Active-High when any core asserts flag/data) |
+| `uo_out[2]` | `Unused` | Output | Top-level Module | Unused (tied to 1'b0) |
+| `uo_out[3]` | `Unused` | Output | Top-level Module | Unused (tied to 1'b0) |
+| `uo_out[4]` | `Unused` | Output | Top-level Module | Unused (tied to 1'b0) |
+| `uo_out[5]` | `Unused` | Output | Top-level Module | Unused (tied to 1'b0) |
+| `uo_out[6]` | `Unused` | Output | Top-level Module | Unused (tied to 1'b0) |
 | `uo_out[7]` | `DBG_DOUT` | Output | Two-Wire Debug Controller | Serial Data Out for Two-Wire Debugger inspection (`dvitantri_shodhana`) |
 | **Bidirectional I/O Pins (`uio[7:0]`)** | | | | |
-| `uio[7:0]` | `IO[7:0]` | Bidi | CPU Cores 0-5 | Full 8-bit Bidirectional Protocol Bus (UART, SPI, I2C, USB, Ethernet, JTAG) |
+| `uio[3:0]` | `PROTOCOL_BUS[3:0]`| Bidi | CPU Cores 0-5 | Active Protocol Bus: `uio[0]` (D+/TX/SDA), `uio[1]` (D-/RX/SCL), `uio[2]` (ETH RX), `uio[3]` (SPI CS) |
+| `uio[7:4]` | `Unused` | Bidi | Top-level Module | Unused / Reserved expansion |
 
 ---
 
@@ -43,7 +44,7 @@ All 8 bidirectional pins (`uio[7:0]`) are connected to all 6 cores:
 * **Output Data (`uio_out[7:0]`):** Each core's output data is masked by its direction before logical OR:
   $$\text{safe\_out}_k = \text{cpu}k\text{\_pin\_dir} \ \& \ \text{cpu}k\text{\_pin\_out}$$
   $$\text{uio\_out}[7:0] = \bigvee_{k=0}^{5} \text{safe\_out}_k$$
-* **Input Data (`uio_in[7:0]`):** Broadcast simultaneously to all six cores. Any core can read the live line state at any cycle via `LOAD PIN_STATE`. Cores 4 and 5 run automatically (`run=1`) and can be halted individually via Two-Wire Debug.
+* **Input Data (`uio_in[7:0]`):** Broadcast simultaneously to all six cores. Any core can read the live line state at any cycle via `LOAD PIN_STATE`. All 6 cores are controlled and halted/resumed via the Two-Wire Debugger (`dvitantri_shodhana`).
 
 ---
 

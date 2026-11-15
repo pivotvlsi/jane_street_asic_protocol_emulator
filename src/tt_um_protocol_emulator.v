@@ -23,47 +23,52 @@ module tt_um_protocol_emulator (
     wire dbg_dout;
     assign uo_out[7] = dbg_dout;
 
-    wire cpu0_run = ui_in[4];
-    wire cpu1_run = ui_in[5];
-    wire cpu2_run = ui_in[6];
-    wire cpu3_run = ui_in[7];
-    wire cpu4_run = 1'b1;
-    wire cpu5_run = 1'b1;
+    // All 6 Processor RUN signals enabled and controlled exclusively via Two-Wire Debugger (dbg_halt[5:0])
+    // dbg_halt[x] = 0 (Run/Active), dbg_halt[x] = 1 (Halt/Freeze)
+    // ui_in[7:4] are unused (tied/ignored), eliminating external in-reg timing paths completely
+    wire _unused_ui_inputs = &{ui_in[7:4], 1'b0};
+
+    wire cpu0_run = ~dbg_halt[0];
+    wire cpu1_run = ~dbg_halt[1];
+    wire cpu2_run = ~dbg_halt[2];
+    wire cpu3_run = ~dbg_halt[3];
+    wire cpu4_run = ~dbg_halt[4];
+    wire cpu5_run = ~dbg_halt[5];
 
     // SPI Slave Wires
     wire [6:0] cpu0_ram_op_waddr; wire [3:0] cpu0_ram_op_wdata; wire cpu0_ram_op_we;
     wire [5:0] cpu0_ram_op1_waddr; wire [3:0] cpu0_ram_op1_wdata; wire cpu0_ram_op1_we;
-    wire [2:0] cpu0_ram_op2_waddr; wire [3:0] cpu0_ram_op2_wdata; wire cpu0_ram_op2_we;
+    wire [3:0] cpu0_ram_op2_waddr; wire [3:0] cpu0_ram_op2_wdata; wire cpu0_ram_op2_we;
     wire [3:0] cpu0_jmp_waddr; wire [15:0] cpu0_jmp_wdata; wire cpu0_jmp_we;
     wire [7:0] cpu0_rx_fifo_wdata; wire cpu0_rx_fifo_we;
     wire [7:0] cpu0_tx_fifo_rdata; wire cpu0_tx_fifo_re; wire cpu0_tx_fifo_empty;
     wire [6:0] cpu1_ram_op_waddr; wire [3:0] cpu1_ram_op_wdata; wire cpu1_ram_op_we;
     wire [5:0] cpu1_ram_op1_waddr; wire [3:0] cpu1_ram_op1_wdata; wire cpu1_ram_op1_we;
-    wire [2:0] cpu1_ram_op2_waddr; wire [3:0] cpu1_ram_op2_wdata; wire cpu1_ram_op2_we;
+    wire [3:0] cpu1_ram_op2_waddr; wire [3:0] cpu1_ram_op2_wdata; wire cpu1_ram_op2_we;
     wire [3:0] cpu1_jmp_waddr; wire [15:0] cpu1_jmp_wdata; wire cpu1_jmp_we;
     wire [7:0] cpu1_rx_fifo_wdata; wire cpu1_rx_fifo_we;
     wire [7:0] cpu1_tx_fifo_rdata; wire cpu1_tx_fifo_re; wire cpu1_tx_fifo_empty;
     wire [6:0] cpu2_ram_op_waddr; wire [3:0] cpu2_ram_op_wdata; wire cpu2_ram_op_we;
     wire [5:0] cpu2_ram_op1_waddr; wire [3:0] cpu2_ram_op1_wdata; wire cpu2_ram_op1_we;
-    wire [2:0] cpu2_ram_op2_waddr; wire [3:0] cpu2_ram_op2_wdata; wire cpu2_ram_op2_we;
+    wire [3:0] cpu2_ram_op2_waddr; wire [3:0] cpu2_ram_op2_wdata; wire cpu2_ram_op2_we;
     wire [3:0] cpu2_jmp_waddr; wire [15:0] cpu2_jmp_wdata; wire cpu2_jmp_we;
     wire [7:0] cpu2_rx_fifo_wdata; wire cpu2_rx_fifo_we;
     wire [7:0] cpu2_tx_fifo_rdata; wire cpu2_tx_fifo_re; wire cpu2_tx_fifo_empty;
     wire [6:0] cpu3_ram_op_waddr; wire [3:0] cpu3_ram_op_wdata; wire cpu3_ram_op_we;
     wire [5:0] cpu3_ram_op1_waddr; wire [3:0] cpu3_ram_op1_wdata; wire cpu3_ram_op1_we;
-    wire [2:0] cpu3_ram_op2_waddr; wire [3:0] cpu3_ram_op2_wdata; wire cpu3_ram_op2_we;
+    wire [3:0] cpu3_ram_op2_waddr; wire [3:0] cpu3_ram_op2_wdata; wire cpu3_ram_op2_we;
     wire [3:0] cpu3_jmp_waddr; wire [15:0] cpu3_jmp_wdata; wire cpu3_jmp_we;
     wire [7:0] cpu3_rx_fifo_wdata; wire cpu3_rx_fifo_we;
     wire [7:0] cpu3_tx_fifo_rdata; wire cpu3_tx_fifo_re; wire cpu3_tx_fifo_empty;
     wire [6:0] cpu4_ram_op_waddr; wire [3:0] cpu4_ram_op_wdata; wire cpu4_ram_op_we;
     wire [5:0] cpu4_ram_op1_waddr; wire [3:0] cpu4_ram_op1_wdata; wire cpu4_ram_op1_we;
-    wire [2:0] cpu4_ram_op2_waddr; wire [3:0] cpu4_ram_op2_wdata; wire cpu4_ram_op2_we;
+    wire [3:0] cpu4_ram_op2_waddr; wire [3:0] cpu4_ram_op2_wdata; wire cpu4_ram_op2_we;
     wire [3:0] cpu4_jmp_waddr; wire [15:0] cpu4_jmp_wdata; wire cpu4_jmp_we;
     wire [7:0] cpu4_rx_fifo_wdata; wire cpu4_rx_fifo_we;
     wire [7:0] cpu4_tx_fifo_rdata; wire cpu4_tx_fifo_re; wire cpu4_tx_fifo_empty;
     wire [6:0] cpu5_ram_op_waddr; wire [3:0] cpu5_ram_op_wdata; wire cpu5_ram_op_we;
     wire [5:0] cpu5_ram_op1_waddr; wire [3:0] cpu5_ram_op1_wdata; wire cpu5_ram_op1_we;
-    wire [2:0] cpu5_ram_op2_waddr; wire [3:0] cpu5_ram_op2_wdata; wire cpu5_ram_op2_we;
+    wire [3:0] cpu5_ram_op2_waddr; wire [3:0] cpu5_ram_op2_wdata; wire cpu5_ram_op2_we;
     wire [3:0] cpu5_jmp_waddr; wire [15:0] cpu5_jmp_wdata; wire cpu5_jmp_we;
     wire [7:0] cpu5_rx_fifo_wdata; wire cpu5_rx_fifo_we;
     wire [7:0] cpu5_tx_fifo_rdata; wire cpu5_tx_fifo_re; wire cpu5_tx_fifo_empty;
@@ -287,6 +292,7 @@ module tt_um_protocol_emulator (
     end
 
     wire [6:0] cpu0_pc_op;
+    wire [6:0] cpu0_pc_op_dvitaya;
     wire [5:0] cpu0_pc_op1;
     wire [3:0] cpu0_pc_op2;
     wire [3:0] cpu0_jmp_addr;
@@ -356,7 +362,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n), .run(cpu0_run),
         .shodhana_virama(dbg_halt[0]),
         .pin_state(uio_in), .pin_out(cpu0_pin_out), .pin_dir(cpu0_pin_dir),
-        .pc_op(cpu0_pc_op), .rom_op_data(cpu0_rom_op_data),
+        .pc_op(cpu0_pc_op), .pc_op_dvitaya(cpu0_pc_op_dvitaya), .rom_op_data(cpu0_rom_op_data),
         .pc_op1(cpu0_pc_op1), .rom_op1_data(cpu0_rom_op1_data),
         .pc_op2(cpu0_pc_op2), .rom_op2_data(cpu0_rom_op2_data),
         .jmp_table_addr(cpu0_jmp_addr), .jmp_table_data(cpu0_jmp_data),
@@ -387,6 +393,7 @@ module tt_um_protocol_emulator (
     end
 
     wire [6:0] cpu1_pc_op;
+    wire [6:0] cpu1_pc_op_dvitaya;
     wire [5:0] cpu1_pc_op1;
     wire [3:0] cpu1_pc_op2;
     wire [3:0] cpu1_jmp_addr;
@@ -456,7 +463,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n), .run(cpu1_run),
         .shodhana_virama(dbg_halt[1]),
         .pin_state(uio_in), .pin_out(cpu1_pin_out), .pin_dir(cpu1_pin_dir),
-        .pc_op(cpu1_pc_op), .rom_op_data(cpu1_rom_op_data),
+        .pc_op(cpu1_pc_op), .pc_op_dvitaya(cpu1_pc_op_dvitaya), .rom_op_data(cpu1_rom_op_data),
         .pc_op1(cpu1_pc_op1), .rom_op1_data(cpu1_rom_op1_data),
         .pc_op2(cpu1_pc_op2), .rom_op2_data(cpu1_rom_op2_data),
         .jmp_table_addr(cpu1_jmp_addr), .jmp_table_data(cpu1_jmp_data),
@@ -487,6 +494,7 @@ module tt_um_protocol_emulator (
     end
 
     wire [6:0] cpu2_pc_op;
+    wire [6:0] cpu2_pc_op_dvitaya;
     wire [5:0] cpu2_pc_op1;
     wire [3:0] cpu2_pc_op2;
     wire [3:0] cpu2_jmp_addr;
@@ -556,7 +564,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n), .run(cpu2_run),
         .shodhana_virama(dbg_halt[2]),
         .pin_state(uio_in), .pin_out(cpu2_pin_out), .pin_dir(cpu2_pin_dir),
-        .pc_op(cpu2_pc_op), .rom_op_data(cpu2_rom_op_data),
+        .pc_op(cpu2_pc_op), .pc_op_dvitaya(cpu2_pc_op_dvitaya), .rom_op_data(cpu2_rom_op_data),
         .pc_op1(cpu2_pc_op1), .rom_op1_data(cpu2_rom_op1_data),
         .pc_op2(cpu2_pc_op2), .rom_op2_data(cpu2_rom_op2_data),
         .jmp_table_addr(cpu2_jmp_addr), .jmp_table_data(cpu2_jmp_data),
@@ -587,6 +595,7 @@ module tt_um_protocol_emulator (
     end
 
     wire [6:0] cpu3_pc_op;
+    wire [6:0] cpu3_pc_op_dvitaya;
     wire [5:0] cpu3_pc_op1;
     wire [3:0] cpu3_pc_op2;
     wire [3:0] cpu3_jmp_addr;
@@ -656,7 +665,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n), .run(cpu3_run),
         .shodhana_virama(dbg_halt[3]),
         .pin_state(uio_in), .pin_out(cpu3_pin_out), .pin_dir(cpu3_pin_dir),
-        .pc_op(cpu3_pc_op), .rom_op_data(cpu3_rom_op_data),
+        .pc_op(cpu3_pc_op), .pc_op_dvitaya(cpu3_pc_op_dvitaya), .rom_op_data(cpu3_rom_op_data),
         .pc_op1(cpu3_pc_op1), .rom_op1_data(cpu3_rom_op1_data),
         .pc_op2(cpu3_pc_op2), .rom_op2_data(cpu3_rom_op2_data),
         .jmp_table_addr(cpu3_jmp_addr), .jmp_table_data(cpu3_jmp_data),
@@ -687,6 +696,7 @@ module tt_um_protocol_emulator (
     end
 
     wire [6:0] cpu4_pc_op;
+    wire [6:0] cpu4_pc_op_dvitaya;
     wire [5:0] cpu4_pc_op1;
     wire [3:0] cpu4_pc_op2;
     wire [3:0] cpu4_jmp_addr;
@@ -756,7 +766,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n), .run(cpu4_run),
         .shodhana_virama(dbg_halt[4]),
         .pin_state(uio_in), .pin_out(cpu4_pin_out), .pin_dir(cpu4_pin_dir),
-        .pc_op(cpu4_pc_op), .rom_op_data(cpu4_rom_op_data),
+        .pc_op(cpu4_pc_op), .pc_op_dvitaya(cpu4_pc_op_dvitaya), .rom_op_data(cpu4_rom_op_data),
         .pc_op1(cpu4_pc_op1), .rom_op1_data(cpu4_rom_op1_data),
         .pc_op2(cpu4_pc_op2), .rom_op2_data(cpu4_rom_op2_data),
         .jmp_table_addr(cpu4_jmp_addr), .jmp_table_data(cpu4_jmp_data),
@@ -787,6 +797,7 @@ module tt_um_protocol_emulator (
     end
 
     wire [6:0] cpu5_pc_op;
+    wire [6:0] cpu5_pc_op_dvitaya;
     wire [5:0] cpu5_pc_op1;
     wire [3:0] cpu5_pc_op2;
     wire [3:0] cpu5_jmp_addr;
@@ -856,7 +867,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n), .run(cpu5_run),
         .shodhana_virama(dbg_halt[5]),
         .pin_state(uio_in), .pin_out(cpu5_pin_out), .pin_dir(cpu5_pin_dir),
-        .pc_op(cpu5_pc_op), .rom_op_data(cpu5_rom_op_data),
+        .pc_op(cpu5_pc_op), .pc_op_dvitaya(cpu5_pc_op_dvitaya), .rom_op_data(cpu5_rom_op_data),
         .pc_op1(cpu5_pc_op1), .rom_op1_data(cpu5_rom_op1_data),
         .pc_op2(cpu5_pc_op2), .rom_op2_data(cpu5_rom_op2_data),
         .jmp_table_addr(cpu5_jmp_addr), .jmp_table_data(cpu5_jmp_data),
@@ -891,7 +902,7 @@ module tt_um_protocol_emulator (
                 muxed_dbg_acc    = cpu0_dbg_acc;
                 muxed_dbg_b      = cpu0_dbg_b;
                 muxed_dbg_flags  = cpu0_dbg_flags;
-                muxed_dbg_pc0    = cpu0_pc_op;
+                muxed_dbg_pc0    = cpu0_pc_op_dvitaya;
                 muxed_dbg_pc1    = cpu0_pc_op1;
                 muxed_dbg_pc2    = cpu0_pc_op2;
                 muxed_dbg_r      = cpu0_dbg_r;
@@ -902,7 +913,7 @@ module tt_um_protocol_emulator (
                 muxed_dbg_acc    = cpu1_dbg_acc;
                 muxed_dbg_b      = cpu1_dbg_b;
                 muxed_dbg_flags  = cpu1_dbg_flags;
-                muxed_dbg_pc0    = cpu1_pc_op;
+                muxed_dbg_pc0    = cpu1_pc_op_dvitaya;
                 muxed_dbg_pc1    = cpu1_pc_op1;
                 muxed_dbg_pc2    = cpu1_pc_op2;
                 muxed_dbg_r      = cpu1_dbg_r;
@@ -913,7 +924,7 @@ module tt_um_protocol_emulator (
                 muxed_dbg_acc    = cpu2_dbg_acc;
                 muxed_dbg_b      = cpu2_dbg_b;
                 muxed_dbg_flags  = cpu2_dbg_flags;
-                muxed_dbg_pc0    = cpu2_pc_op;
+                muxed_dbg_pc0    = cpu2_pc_op_dvitaya;
                 muxed_dbg_pc1    = cpu2_pc_op1;
                 muxed_dbg_pc2    = cpu2_pc_op2;
                 muxed_dbg_r      = cpu2_dbg_r;
@@ -924,7 +935,7 @@ module tt_um_protocol_emulator (
                 muxed_dbg_acc    = cpu3_dbg_acc;
                 muxed_dbg_b      = cpu3_dbg_b;
                 muxed_dbg_flags  = cpu3_dbg_flags;
-                muxed_dbg_pc0    = cpu3_pc_op;
+                muxed_dbg_pc0    = cpu3_pc_op_dvitaya;
                 muxed_dbg_pc1    = cpu3_pc_op1;
                 muxed_dbg_pc2    = cpu3_pc_op2;
                 muxed_dbg_r      = cpu3_dbg_r;
@@ -935,7 +946,7 @@ module tt_um_protocol_emulator (
                 muxed_dbg_acc    = cpu4_dbg_acc;
                 muxed_dbg_b      = cpu4_dbg_b;
                 muxed_dbg_flags  = cpu4_dbg_flags;
-                muxed_dbg_pc0    = cpu4_pc_op;
+                muxed_dbg_pc0    = cpu4_pc_op_dvitaya;
                 muxed_dbg_pc1    = cpu4_pc_op1;
                 muxed_dbg_pc2    = cpu4_pc_op2;
                 muxed_dbg_r      = cpu4_dbg_r;
@@ -946,7 +957,7 @@ module tt_um_protocol_emulator (
                 muxed_dbg_acc    = cpu5_dbg_acc;
                 muxed_dbg_b      = cpu5_dbg_b;
                 muxed_dbg_flags  = cpu5_dbg_flags;
-                muxed_dbg_pc0    = cpu5_pc_op;
+                muxed_dbg_pc0    = cpu5_pc_op_dvitaya;
                 muxed_dbg_pc1    = cpu5_pc_op1;
                 muxed_dbg_pc2    = cpu5_pc_op2;
                 muxed_dbg_r      = cpu5_dbg_r;
@@ -989,11 +1000,26 @@ module tt_um_protocol_emulator (
     assign uio_out = cpu0_safe_out | cpu1_safe_out | cpu2_safe_out | 
                      cpu3_safe_out | cpu4_safe_out | cpu5_safe_out;
 
-    assign uo_out[1] = cpu0_rx_empty;
-    assign uo_out[2] = cpu1_rx_empty;
-    assign uo_out[3] = cpu2_rx_empty;
-    assign uo_out[4] = cpu3_rx_empty;
-    assign uo_out[5] = cpu0_tx_fifo_empty;
-    assign uo_out[6] = cpu1_tx_fifo_empty;
+    // Global Host Interrupt Notification
+    // Fires HIGH if ANY core asserts an event flag:
+    // - Overrun flag from any CPU (cpu0..5_tx_overrun)
+    // - RX FIFO non-empty from any CPU (!cpu0..5_rx_empty)
+    // - TX FIFO non-empty from any CPU (!cpu0..5_tx_fifo_empty)
+    wire sarva_dhvaja_sanketa = 
+        cpu0_tx_overrun | cpu1_tx_overrun | cpu2_tx_overrun | cpu3_tx_overrun | cpu4_tx_overrun | cpu5_tx_overrun |
+        !cpu0_rx_empty  | !cpu1_rx_empty  | !cpu2_rx_empty  | !cpu3_rx_empty  | !cpu4_rx_empty  | !cpu5_rx_empty  |
+        !cpu0_tx_fifo_empty | !cpu1_tx_fifo_empty | !cpu2_tx_fifo_empty | !cpu3_tx_fifo_empty | !cpu4_tx_fifo_empty | !cpu5_tx_fifo_empty;
+
+    // Output Pin Assignments
+    // uo_out[0]: SPI MISO
+    // uo_out[1]: Global Host Interrupt (sarva_dhvaja_sanketa)
+    // uo_out[6:2]: Unused (tied low)
+    // uo_out[7]: DBG DOUT (Two-Wire Debugger serial output)
+    assign uo_out[1] = sarva_dhvaja_sanketa;
+    assign uo_out[2] = 1'b0;
+    assign uo_out[3] = 1'b0;
+    assign uo_out[4] = 1'b0;
+    assign uo_out[5] = 1'b0;
+    assign uo_out[6] = 1'b0;
 
 endmodule
