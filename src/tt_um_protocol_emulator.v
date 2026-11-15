@@ -23,6 +23,35 @@ module tt_um_protocol_emulator (
     wire dbg_dout;
     assign uo_out[7] = dbg_dout;
 
+    // =========================================================================
+    // Punahsthapana Vriksha (Reset Tree & Two-Stage Synchronizer)
+    // Asynchronous Assert (immediate), Synchronous Deassert (clock-aligned)
+    // Eliminates external pad removal/recovery timing violations on slow corner
+    // =========================================================================
+    reg punahsthapana_samakalana_prathama;
+    reg punahsthapana_samakalana_dvitaya;
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            punahsthapana_samakalana_prathama <= 1'b0;
+            punahsthapana_samakalana_dvitaya  <= 1'b0;
+        end else begin
+            punahsthapana_samakalana_prathama <= 1'b1;
+            punahsthapana_samakalana_dvitaya  <= punahsthapana_samakalana_prathama;
+        end
+    end
+
+    wire rst_n_samakalita = punahsthapana_samakalana_dvitaya;
+
+    // Balanced tree drivers to decouple load across cores and subsystems
+    (* keep = "true" *) wire rst_n_cpu0 = rst_n_samakalita;
+    (* keep = "true" *) wire rst_n_cpu1 = rst_n_samakalita;
+    (* keep = "true" *) wire rst_n_cpu2 = rst_n_samakalita;
+    (* keep = "true" *) wire rst_n_cpu3 = rst_n_samakalita;
+    (* keep = "true" *) wire rst_n_cpu4 = rst_n_samakalita;
+    (* keep = "true" *) wire rst_n_cpu5 = rst_n_samakalita;
+    (* keep = "true" *) wire rst_n_paridhi = rst_n_samakalita;
+
     // All 6 Processor RUN signals enabled and controlled exclusively via Two-Wire Debugger (dbg_halt[5:0])
     // dbg_halt[x] = 0 (Run/Active), dbg_halt[x] = 1 (Halt/Freeze)
     // ui_in[7:4] are unused (tied/ignored), eliminating external in-reg timing paths completely
@@ -74,7 +103,7 @@ module tt_um_protocol_emulator (
     wire [7:0] cpu5_tx_fifo_rdata; wire cpu5_tx_fifo_re; wire cpu5_tx_fifo_empty;
 
     spi_slave spi_inst (
-        .clk(clk), .rst_n(rst_n),
+        .clk(clk), .rst_n(rst_n_paridhi),
         .spi_cs(spi_cs), .spi_sclk(spi_sclk), .spi_mosi(spi_mosi), .spi_miso(spi_miso),
         .cpu0_ram_op_addr(cpu0_ram_op_waddr), .cpu0_ram_op_wdata(cpu0_ram_op_wdata), .cpu0_ram_op_we(cpu0_ram_op_we),
         .cpu0_ram_op1_addr(cpu0_ram_op1_waddr), .cpu0_ram_op1_wdata(cpu0_ram_op1_wdata), .cpu0_ram_op1_we(cpu0_ram_op1_we),
@@ -153,8 +182,8 @@ module tt_um_protocol_emulator (
 
     wire crc_reseed_cmd = crc_ctrl_we && crc_ctrl_data[2];
 
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) crc_slice_sel <= 2'b00;
+    always @(posedge clk or negedge rst_n_paridhi) begin
+        if (!rst_n_paridhi) crc_slice_sel <= 2'b00;
         else if (crc_ctrl_we) crc_slice_sel <= crc_ctrl_data[1:0];
     end
 
@@ -162,7 +191,7 @@ module tt_um_protocol_emulator (
 
     sarvatrika_chakriya_punaravritti crc_inst (
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(rst_n_paridhi),
         .vinyasa_lekhana_sanketa(spi_crc_we),
         .vinyasa_panjika_sanketa(spi_crc_addr),
         .vinyasa_datta_nivesha(spi_crc_wdata),
@@ -180,8 +209,8 @@ module tt_um_protocol_emulator (
     reg [7:0] shared_reg_4; reg shared_reg_4_valid;
     reg [7:0] shared_reg_5; reg shared_reg_5_valid;
 
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+    always @(posedge clk or negedge rst_n_paridhi) begin
+        if (!rst_n_paridhi) begin
             shared_reg_0 <= 0; shared_reg_0_valid <= 0;
             shared_reg_1 <= 0; shared_reg_1_valid <= 0;
             shared_reg_2 <= 0; shared_reg_2_valid <= 0;
@@ -311,18 +340,18 @@ module tt_um_protocol_emulator (
 
     wire [7:0] cpu0_rx_rdata; wire cpu0_rx_empty, cpu0_rx_full;
     wire cpu0_rx_re = (cpu0_mem_addr == 4'h5) && cpu0_mem_re && !cpu0_rx_empty;
-    fifo rx0 (.clk(clk), .rst_n(rst_n), .wdata(cpu0_rx_fifo_wdata), .we(cpu0_rx_fifo_we),
+    fifo rx0 (.clk(clk), .rst_n(rst_n_cpu0), .wdata(cpu0_rx_fifo_wdata), .we(cpu0_rx_fifo_we),
               .rdata(cpu0_rx_rdata), .re(cpu0_rx_re), .empty(cpu0_rx_empty), .full(cpu0_rx_full));
               
     wire cpu0_tx_full;
     wire cpu0_tx_we = (cpu0_mem_addr == 4'h4) && cpu0_mem_we && !cpu0_tx_full;
-    fifo tx0 (.clk(clk), .rst_n(rst_n), .wdata(cpu0_mem_wdata), .we(cpu0_tx_we),
+    fifo tx0 (.clk(clk), .rst_n(rst_n_cpu0), .wdata(cpu0_mem_wdata), .we(cpu0_tx_we),
               .rdata(cpu0_tx_fifo_rdata), .re(cpu0_tx_fifo_re), .empty(cpu0_tx_fifo_empty), .full(cpu0_tx_full));
 
     wire [7:0] cpu0_timer_rdata; wire cpu0_timer_zero;
     wire cpu0_timer_we_l = (cpu0_mem_addr == 4'h7) && cpu0_mem_we;
     wire cpu0_timer_we_h = (cpu0_mem_addr == 4'h8) && cpu0_mem_we;
-    timer tmr0 (.clk(clk), .rst_n(rst_n), .wdata(cpu0_mem_wdata), .we_l(cpu0_timer_we_l), .we_h(cpu0_timer_we_h),
+    timer tmr0 (.clk(clk), .rst_n(rst_n_cpu0), .wdata(cpu0_mem_wdata), .we_l(cpu0_timer_we_l), .we_h(cpu0_timer_we_h),
                 .rdata_l(cpu0_timer_rdata), .is_zero(cpu0_timer_zero));
 
     always @(*) begin
@@ -350,8 +379,8 @@ module tt_um_protocol_emulator (
         (cpu0_mem_we && cpu0_mem_addr == 4'h4 && cpu0_tx_full);
 
     reg cpu0_tx_overrun;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) cpu0_tx_overrun <= 1'b0;
+    always @(posedge clk or negedge rst_n_cpu0) begin
+        if (!rst_n_cpu0) cpu0_tx_overrun <= 1'b0;
         else if (cpu0_mem_we && cpu0_mem_addr == 4'h4 && cpu0_tx_full) cpu0_tx_overrun <= 1'b1;
         else if (cpu0_mem_re && cpu0_mem_addr == 4'h8) cpu0_tx_overrun <= 1'b0;
     end
@@ -359,7 +388,7 @@ module tt_um_protocol_emulator (
     wire [7:0] cpu0_dbg_acc, cpu0_dbg_b, cpu0_dbg_flags, cpu0_dbg_r;
 
     cpu_core core0 (
-        .clk(clk), .rst_n(rst_n), .run(cpu0_run),
+        .clk(clk), .rst_n(rst_n_cpu0), .run(cpu0_run),
         .shodhana_virama(dbg_halt[0]),
         .pin_state(uio_in), .pin_out(cpu0_pin_out), .pin_dir(cpu0_pin_dir),
         .pc_op(cpu0_pc_op), .pc_op_dvitaya(cpu0_pc_op_dvitaya), .rom_op_data(cpu0_rom_op_data),
@@ -412,18 +441,18 @@ module tt_um_protocol_emulator (
 
     wire [7:0] cpu1_rx_rdata; wire cpu1_rx_empty, cpu1_rx_full;
     wire cpu1_rx_re = (cpu1_mem_addr == 4'h5) && cpu1_mem_re && !cpu1_rx_empty;
-    fifo rx1 (.clk(clk), .rst_n(rst_n), .wdata(cpu1_rx_fifo_wdata), .we(cpu1_rx_fifo_we),
+    fifo rx1 (.clk(clk), .rst_n(rst_n_cpu1), .wdata(cpu1_rx_fifo_wdata), .we(cpu1_rx_fifo_we),
               .rdata(cpu1_rx_rdata), .re(cpu1_rx_re), .empty(cpu1_rx_empty), .full(cpu1_rx_full));
               
     wire cpu1_tx_full;
     wire cpu1_tx_we = (cpu1_mem_addr == 4'h4) && cpu1_mem_we && !cpu1_tx_full;
-    fifo tx1 (.clk(clk), .rst_n(rst_n), .wdata(cpu1_mem_wdata), .we(cpu1_tx_we),
+    fifo tx1 (.clk(clk), .rst_n(rst_n_cpu1), .wdata(cpu1_mem_wdata), .we(cpu1_tx_we),
               .rdata(cpu1_tx_fifo_rdata), .re(cpu1_tx_fifo_re), .empty(cpu1_tx_fifo_empty), .full(cpu1_tx_full));
 
     wire [7:0] cpu1_timer_rdata; wire cpu1_timer_zero;
     wire cpu1_timer_we_l = (cpu1_mem_addr == 4'h7) && cpu1_mem_we;
     wire cpu1_timer_we_h = (cpu1_mem_addr == 4'h8) && cpu1_mem_we;
-    timer tmr1 (.clk(clk), .rst_n(rst_n), .wdata(cpu1_mem_wdata), .we_l(cpu1_timer_we_l), .we_h(cpu1_timer_we_h),
+    timer tmr1 (.clk(clk), .rst_n(rst_n_cpu1), .wdata(cpu1_mem_wdata), .we_l(cpu1_timer_we_l), .we_h(cpu1_timer_we_h),
                 .rdata_l(cpu1_timer_rdata), .is_zero(cpu1_timer_zero));
 
     always @(*) begin
@@ -451,8 +480,8 @@ module tt_um_protocol_emulator (
         (cpu1_mem_we && cpu1_mem_addr == 4'h4 && cpu1_tx_full);
 
     reg cpu1_tx_overrun;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) cpu1_tx_overrun <= 1'b0;
+    always @(posedge clk or negedge rst_n_cpu1) begin
+        if (!rst_n_cpu1) cpu1_tx_overrun <= 1'b0;
         else if (cpu1_mem_we && cpu1_mem_addr == 4'h4 && cpu1_tx_full) cpu1_tx_overrun <= 1'b1;
         else if (cpu1_mem_re && cpu1_mem_addr == 4'h8) cpu1_tx_overrun <= 1'b0;
     end
@@ -460,7 +489,7 @@ module tt_um_protocol_emulator (
     wire [7:0] cpu1_dbg_acc, cpu1_dbg_b, cpu1_dbg_flags, cpu1_dbg_r;
 
     cpu_core core1 (
-        .clk(clk), .rst_n(rst_n), .run(cpu1_run),
+        .clk(clk), .rst_n(rst_n_cpu1), .run(cpu1_run),
         .shodhana_virama(dbg_halt[1]),
         .pin_state(uio_in), .pin_out(cpu1_pin_out), .pin_dir(cpu1_pin_dir),
         .pc_op(cpu1_pc_op), .pc_op_dvitaya(cpu1_pc_op_dvitaya), .rom_op_data(cpu1_rom_op_data),
@@ -513,18 +542,18 @@ module tt_um_protocol_emulator (
 
     wire [7:0] cpu2_rx_rdata; wire cpu2_rx_empty, cpu2_rx_full;
     wire cpu2_rx_re = (cpu2_mem_addr == 4'h5) && cpu2_mem_re && !cpu2_rx_empty;
-    fifo rx2 (.clk(clk), .rst_n(rst_n), .wdata(cpu2_rx_fifo_wdata), .we(cpu2_rx_fifo_we),
+    fifo rx2 (.clk(clk), .rst_n(rst_n_cpu2), .wdata(cpu2_rx_fifo_wdata), .we(cpu2_rx_fifo_we),
               .rdata(cpu2_rx_rdata), .re(cpu2_rx_re), .empty(cpu2_rx_empty), .full(cpu2_rx_full));
               
     wire cpu2_tx_full;
     wire cpu2_tx_we = (cpu2_mem_addr == 4'h4) && cpu2_mem_we && !cpu2_tx_full;
-    fifo tx2 (.clk(clk), .rst_n(rst_n), .wdata(cpu2_mem_wdata), .we(cpu2_tx_we),
+    fifo tx2 (.clk(clk), .rst_n(rst_n_cpu2), .wdata(cpu2_mem_wdata), .we(cpu2_tx_we),
               .rdata(cpu2_tx_fifo_rdata), .re(cpu2_tx_fifo_re), .empty(cpu2_tx_fifo_empty), .full(cpu2_tx_full));
 
     wire [7:0] cpu2_timer_rdata; wire cpu2_timer_zero;
     wire cpu2_timer_we_l = (cpu2_mem_addr == 4'h7) && cpu2_mem_we;
     wire cpu2_timer_we_h = (cpu2_mem_addr == 4'h8) && cpu2_mem_we;
-    timer tmr2 (.clk(clk), .rst_n(rst_n), .wdata(cpu2_mem_wdata), .we_l(cpu2_timer_we_l), .we_h(cpu2_timer_we_h),
+    timer tmr2 (.clk(clk), .rst_n(rst_n_cpu2), .wdata(cpu2_mem_wdata), .we_l(cpu2_timer_we_l), .we_h(cpu2_timer_we_h),
                 .rdata_l(cpu2_timer_rdata), .is_zero(cpu2_timer_zero));
 
     always @(*) begin
@@ -552,8 +581,8 @@ module tt_um_protocol_emulator (
         (cpu2_mem_we && cpu2_mem_addr == 4'h4 && cpu2_tx_full);
 
     reg cpu2_tx_overrun;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) cpu2_tx_overrun <= 1'b0;
+    always @(posedge clk or negedge rst_n_cpu2) begin
+        if (!rst_n_cpu2) cpu2_tx_overrun <= 1'b0;
         else if (cpu2_mem_we && cpu2_mem_addr == 4'h4 && cpu2_tx_full) cpu2_tx_overrun <= 1'b1;
         else if (cpu2_mem_re && cpu2_mem_addr == 4'h8) cpu2_tx_overrun <= 1'b0;
     end
@@ -561,7 +590,7 @@ module tt_um_protocol_emulator (
     wire [7:0] cpu2_dbg_acc, cpu2_dbg_b, cpu2_dbg_flags, cpu2_dbg_r;
 
     cpu_core core2 (
-        .clk(clk), .rst_n(rst_n), .run(cpu2_run),
+        .clk(clk), .rst_n(rst_n_cpu2), .run(cpu2_run),
         .shodhana_virama(dbg_halt[2]),
         .pin_state(uio_in), .pin_out(cpu2_pin_out), .pin_dir(cpu2_pin_dir),
         .pc_op(cpu2_pc_op), .pc_op_dvitaya(cpu2_pc_op_dvitaya), .rom_op_data(cpu2_rom_op_data),
@@ -614,18 +643,18 @@ module tt_um_protocol_emulator (
 
     wire [7:0] cpu3_rx_rdata; wire cpu3_rx_empty, cpu3_rx_full;
     wire cpu3_rx_re = (cpu3_mem_addr == 4'h5) && cpu3_mem_re && !cpu3_rx_empty;
-    fifo rx3 (.clk(clk), .rst_n(rst_n), .wdata(cpu3_rx_fifo_wdata), .we(cpu3_rx_fifo_we),
+    fifo rx3 (.clk(clk), .rst_n(rst_n_cpu3), .wdata(cpu3_rx_fifo_wdata), .we(cpu3_rx_fifo_we),
               .rdata(cpu3_rx_rdata), .re(cpu3_rx_re), .empty(cpu3_rx_empty), .full(cpu3_rx_full));
               
     wire cpu3_tx_full;
     wire cpu3_tx_we = (cpu3_mem_addr == 4'h4) && cpu3_mem_we && !cpu3_tx_full;
-    fifo tx3 (.clk(clk), .rst_n(rst_n), .wdata(cpu3_mem_wdata), .we(cpu3_tx_we),
+    fifo tx3 (.clk(clk), .rst_n(rst_n_cpu3), .wdata(cpu3_mem_wdata), .we(cpu3_tx_we),
               .rdata(cpu3_tx_fifo_rdata), .re(cpu3_tx_fifo_re), .empty(cpu3_tx_fifo_empty), .full(cpu3_tx_full));
 
     wire [7:0] cpu3_timer_rdata; wire cpu3_timer_zero;
     wire cpu3_timer_we_l = (cpu3_mem_addr == 4'h7) && cpu3_mem_we;
     wire cpu3_timer_we_h = (cpu3_mem_addr == 4'h8) && cpu3_mem_we;
-    timer tmr3 (.clk(clk), .rst_n(rst_n), .wdata(cpu3_mem_wdata), .we_l(cpu3_timer_we_l), .we_h(cpu3_timer_we_h),
+    timer tmr3 (.clk(clk), .rst_n(rst_n_cpu3), .wdata(cpu3_mem_wdata), .we_l(cpu3_timer_we_l), .we_h(cpu3_timer_we_h),
                 .rdata_l(cpu3_timer_rdata), .is_zero(cpu3_timer_zero));
 
     always @(*) begin
@@ -653,8 +682,8 @@ module tt_um_protocol_emulator (
         (cpu3_mem_we && cpu3_mem_addr == 4'h4 && cpu3_tx_full);
 
     reg cpu3_tx_overrun;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) cpu3_tx_overrun <= 1'b0;
+    always @(posedge clk or negedge rst_n_cpu3) begin
+        if (!rst_n_cpu3) cpu3_tx_overrun <= 1'b0;
         else if (cpu3_mem_we && cpu3_mem_addr == 4'h4 && cpu3_tx_full) cpu3_tx_overrun <= 1'b1;
         else if (cpu3_mem_re && cpu3_mem_addr == 4'h8) cpu3_tx_overrun <= 1'b0;
     end
@@ -662,7 +691,7 @@ module tt_um_protocol_emulator (
     wire [7:0] cpu3_dbg_acc, cpu3_dbg_b, cpu3_dbg_flags, cpu3_dbg_r;
 
     cpu_core core3 (
-        .clk(clk), .rst_n(rst_n), .run(cpu3_run),
+        .clk(clk), .rst_n(rst_n_cpu3), .run(cpu3_run),
         .shodhana_virama(dbg_halt[3]),
         .pin_state(uio_in), .pin_out(cpu3_pin_out), .pin_dir(cpu3_pin_dir),
         .pc_op(cpu3_pc_op), .pc_op_dvitaya(cpu3_pc_op_dvitaya), .rom_op_data(cpu3_rom_op_data),
@@ -715,18 +744,18 @@ module tt_um_protocol_emulator (
 
     wire [7:0] cpu4_rx_rdata; wire cpu4_rx_empty, cpu4_rx_full;
     wire cpu4_rx_re = (cpu4_mem_addr == 4'h5) && cpu4_mem_re && !cpu4_rx_empty;
-    fifo rx4 (.clk(clk), .rst_n(rst_n), .wdata(cpu4_rx_fifo_wdata), .we(cpu4_rx_fifo_we),
+    fifo rx4 (.clk(clk), .rst_n(rst_n_cpu4), .wdata(cpu4_rx_fifo_wdata), .we(cpu4_rx_fifo_we),
               .rdata(cpu4_rx_rdata), .re(cpu4_rx_re), .empty(cpu4_rx_empty), .full(cpu4_rx_full));
               
     wire cpu4_tx_full;
     wire cpu4_tx_we = (cpu4_mem_addr == 4'h4) && cpu4_mem_we && !cpu4_tx_full;
-    fifo tx4 (.clk(clk), .rst_n(rst_n), .wdata(cpu4_mem_wdata), .we(cpu4_tx_we),
+    fifo tx4 (.clk(clk), .rst_n(rst_n_cpu4), .wdata(cpu4_mem_wdata), .we(cpu4_tx_we),
               .rdata(cpu4_tx_fifo_rdata), .re(cpu4_tx_fifo_re), .empty(cpu4_tx_fifo_empty), .full(cpu4_tx_full));
 
     wire [7:0] cpu4_timer_rdata; wire cpu4_timer_zero;
     wire cpu4_timer_we_l = (cpu4_mem_addr == 4'h7) && cpu4_mem_we;
     wire cpu4_timer_we_h = (cpu4_mem_addr == 4'h8) && cpu4_mem_we;
-    timer tmr4 (.clk(clk), .rst_n(rst_n), .wdata(cpu4_mem_wdata), .we_l(cpu4_timer_we_l), .we_h(cpu4_timer_we_h),
+    timer tmr4 (.clk(clk), .rst_n(rst_n_cpu4), .wdata(cpu4_mem_wdata), .we_l(cpu4_timer_we_l), .we_h(cpu4_timer_we_h),
                 .rdata_l(cpu4_timer_rdata), .is_zero(cpu4_timer_zero));
 
     always @(*) begin
@@ -754,8 +783,8 @@ module tt_um_protocol_emulator (
         (cpu4_mem_we && cpu4_mem_addr == 4'h4 && cpu4_tx_full);
 
     reg cpu4_tx_overrun;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) cpu4_tx_overrun <= 1'b0;
+    always @(posedge clk or negedge rst_n_cpu4) begin
+        if (!rst_n_cpu4) cpu4_tx_overrun <= 1'b0;
         else if (cpu4_mem_we && cpu4_mem_addr == 4'h4 && cpu4_tx_full) cpu4_tx_overrun <= 1'b1;
         else if (cpu4_mem_re && cpu4_mem_addr == 4'h8) cpu4_tx_overrun <= 1'b0;
     end
@@ -763,7 +792,7 @@ module tt_um_protocol_emulator (
     wire [7:0] cpu4_dbg_acc, cpu4_dbg_b, cpu4_dbg_flags, cpu4_dbg_r;
 
     cpu_core core4 (
-        .clk(clk), .rst_n(rst_n), .run(cpu4_run),
+        .clk(clk), .rst_n(rst_n_cpu4), .run(cpu4_run),
         .shodhana_virama(dbg_halt[4]),
         .pin_state(uio_in), .pin_out(cpu4_pin_out), .pin_dir(cpu4_pin_dir),
         .pc_op(cpu4_pc_op), .pc_op_dvitaya(cpu4_pc_op_dvitaya), .rom_op_data(cpu4_rom_op_data),
@@ -816,18 +845,18 @@ module tt_um_protocol_emulator (
 
     wire [7:0] cpu5_rx_rdata; wire cpu5_rx_empty, cpu5_rx_full;
     wire cpu5_rx_re = (cpu5_mem_addr == 4'h5) && cpu5_mem_re && !cpu5_rx_empty;
-    fifo rx5 (.clk(clk), .rst_n(rst_n), .wdata(cpu5_rx_fifo_wdata), .we(cpu5_rx_fifo_we),
+    fifo rx5 (.clk(clk), .rst_n(rst_n_cpu5), .wdata(cpu5_rx_fifo_wdata), .we(cpu5_rx_fifo_we),
               .rdata(cpu5_rx_rdata), .re(cpu5_rx_re), .empty(cpu5_rx_empty), .full(cpu5_rx_full));
               
     wire cpu5_tx_full;
     wire cpu5_tx_we = (cpu5_mem_addr == 4'h4) && cpu5_mem_we && !cpu5_tx_full;
-    fifo tx5 (.clk(clk), .rst_n(rst_n), .wdata(cpu5_mem_wdata), .we(cpu5_tx_we),
+    fifo tx5 (.clk(clk), .rst_n(rst_n_cpu5), .wdata(cpu5_mem_wdata), .we(cpu5_tx_we),
               .rdata(cpu5_tx_fifo_rdata), .re(cpu5_tx_fifo_re), .empty(cpu5_tx_fifo_empty), .full(cpu5_tx_full));
 
     wire [7:0] cpu5_timer_rdata; wire cpu5_timer_zero;
     wire cpu5_timer_we_l = (cpu5_mem_addr == 4'h7) && cpu5_mem_we;
     wire cpu5_timer_we_h = (cpu5_mem_addr == 4'h8) && cpu5_mem_we;
-    timer tmr5 (.clk(clk), .rst_n(rst_n), .wdata(cpu5_mem_wdata), .we_l(cpu5_timer_we_l), .we_h(cpu5_timer_we_h),
+    timer tmr5 (.clk(clk), .rst_n(rst_n_cpu5), .wdata(cpu5_mem_wdata), .we_l(cpu5_timer_we_l), .we_h(cpu5_timer_we_h),
                 .rdata_l(cpu5_timer_rdata), .is_zero(cpu5_timer_zero));
 
     always @(*) begin
@@ -855,8 +884,8 @@ module tt_um_protocol_emulator (
         (cpu5_mem_we && cpu5_mem_addr == 4'h4 && cpu5_tx_full);
 
     reg cpu5_tx_overrun;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) cpu5_tx_overrun <= 1'b0;
+    always @(posedge clk or negedge rst_n_cpu5) begin
+        if (!rst_n_cpu5) cpu5_tx_overrun <= 1'b0;
         else if (cpu5_mem_we && cpu5_mem_addr == 4'h4 && cpu5_tx_full) cpu5_tx_overrun <= 1'b1;
         else if (cpu5_mem_re && cpu5_mem_addr == 4'h8) cpu5_tx_overrun <= 1'b0;
     end
@@ -864,7 +893,7 @@ module tt_um_protocol_emulator (
     wire [7:0] cpu5_dbg_acc, cpu5_dbg_b, cpu5_dbg_flags, cpu5_dbg_r;
 
     cpu_core core5 (
-        .clk(clk), .rst_n(rst_n), .run(cpu5_run),
+        .clk(clk), .rst_n(rst_n_cpu5), .run(cpu5_run),
         .shodhana_virama(dbg_halt[5]),
         .pin_state(uio_in), .pin_out(cpu5_pin_out), .pin_dir(cpu5_pin_dir),
         .pc_op(cpu5_pc_op), .pc_op_dvitaya(cpu5_pc_op_dvitaya), .rom_op_data(cpu5_rom_op_data),
@@ -969,7 +998,7 @@ module tt_um_protocol_emulator (
 
     dvitantri_shodhana dbg_ctrl (
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(rst_n_paridhi),
         .shodhana_ghatika(dbg_sclk),
         .shodhana_nivesha(dbg_din),
         .shodhana_nirgama(dbg_dout),
