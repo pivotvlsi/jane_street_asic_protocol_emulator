@@ -75,7 +75,11 @@ set_timing_derate -late [expr 1+[expr $::env(TIME_DERATING_CONSTRAINT) / 100.0]]
 # =========================================================================
 # False path constraints for asynchronous reset deassertion
 # In IHP 130nm standard cells, D-flip-flop asynchronous reset pin is RESET_B
+# Cut paths from the output of the synchronizer register and downstream reset nets
 # =========================================================================
+set_false_path -from [get_pins -hierarchical -filter "name =~ *punahsthapana_samakalana*/*Q*"]
+set_false_path -from [get_cells -hierarchical -filter "name =~ *punahsthapana_samakalana*"]
+set_false_path -through [get_nets -hierarchical -filter "name =~ *rst_n*"]
 set_false_path -to [get_pins -hierarchical -filter "name =~ *RESET_B*"]
 
 if { [info exists ::env(OPENLANE_SDC_IDEAL_CLOCKS)] && $::env(OPENLANE_SDC_IDEAL_CLOCKS) } {
