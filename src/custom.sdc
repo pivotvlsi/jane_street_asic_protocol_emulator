@@ -82,6 +82,17 @@ set_false_path -from [get_cells -hierarchical -filter "name =~ *punahsthapana_sa
 set_false_path -through [get_nets -hierarchical -filter "name =~ *rst_n*"]
 set_false_path -to [get_pins -hierarchical -filter "name =~ *RESET_B*"]
 
+# =========================================================================
+# Multicycle path constraints for Universal CRC Engine (sarvatrika_chakriya_punaravritti)
+# Allows 2 cycles for 8-bit unrolled CRC polynomial calculation and readback to CPU cores
+# =========================================================================
+set_multicycle_path 2 -setup -from [get_cells -hierarchical -filter "name =~ *crc_inst*"]
+set_multicycle_path 1 -hold  -from [get_cells -hierarchical -filter "name =~ *crc_inst*"]
+set_multicycle_path 2 -setup -to   [get_cells -hierarchical -filter "name =~ *crc_inst*"]
+set_multicycle_path 1 -hold  -to   [get_cells -hierarchical -filter "name =~ *crc_inst*"]
+set_multicycle_path 2 -setup -through [get_nets -hierarchical -filter "name =~ *crc_result_byte*"]
+set_multicycle_path 1 -hold  -through [get_nets -hierarchical -filter "name =~ *crc_result_byte*"]
+
 if { [info exists ::env(OPENLANE_SDC_IDEAL_CLOCKS)] && $::env(OPENLANE_SDC_IDEAL_CLOCKS) } {
     unset_propagated_clock [all_clocks]
 } else {
