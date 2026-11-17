@@ -83,11 +83,17 @@ module sarvatrika_chakriya_punaravritti #(
     wire [7:0] prayukta_nivesha = pratibimba_nivesha_dhvaja ? paravartita_nivesha : pravishti_datta_nivesha;
 
     // ------------------------------------------------------------------------
-    // 3. Chakriya Ganana (Unrolled 8-Bit LFSR Combinational Block)
+    // 3. Chakriya Ganana (Two-Stage Pipelined 4-Bit LFSR Blocks)
     // ------------------------------------------------------------------------
     reg [31:0] ganita_krama_0, ganita_krama_1, ganita_krama_2, ganita_krama_3;
     reg [31:0] ganita_krama_4, ganita_krama_5, ganita_krama_6, ganita_krama_7;
 
+    // Pipeline stage registers (Sanskrit identifier naming)
+    reg [31:0] madhyama_sthiti_panjika;
+    reg [3:0]  madhyama_datta_panjika;
+    reg        madhyama_vaidha_dhvaja;
+
+    // Stage 1 Combinational Logic: Bits 0 to 3
     always @(*) begin
         // Bit 0
         if (((chakriya_sthiti_panjika >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[7])
@@ -112,27 +118,30 @@ module sarvatrika_chakriya_punaravritti #(
             ganita_krama_3 = (ganita_krama_2 << 1) ^ bhajaka_bahupada_panjika;
         else
             ganita_krama_3 = (ganita_krama_2 << 1);
+    end
 
+    // Stage 2 Combinational Logic: Bits 4 to 7
+    always @(*) begin
         // Bit 4
-        if (((ganita_krama_3 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[3])
-            ganita_krama_4 = (ganita_krama_3 << 1) ^ bhajaka_bahupada_panjika;
+        if (((madhyama_sthiti_panjika >> (vistara_panjika - 1)) & 1'b1) ^ madhyama_datta_panjika[3])
+            ganita_krama_4 = (madhyama_sthiti_panjika << 1) ^ bhajaka_bahupada_panjika;
         else
-            ganita_krama_4 = (ganita_krama_3 << 1);
+            ganita_krama_4 = (madhyama_sthiti_panjika << 1);
 
         // Bit 5
-        if (((ganita_krama_4 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[2])
+        if (((ganita_krama_4 >> (vistara_panjika - 1)) & 1'b1) ^ madhyama_datta_panjika[2])
             ganita_krama_5 = (ganita_krama_4 << 1) ^ bhajaka_bahupada_panjika;
         else
             ganita_krama_5 = (ganita_krama_4 << 1);
 
         // Bit 6
-        if (((ganita_krama_5 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[1])
+        if (((ganita_krama_5 >> (vistara_panjika - 1)) & 1'b1) ^ madhyama_datta_panjika[1])
             ganita_krama_6 = (ganita_krama_5 << 1) ^ bhajaka_bahupada_panjika;
         else
             ganita_krama_6 = (ganita_krama_5 << 1);
 
         // Bit 7
-        if (((ganita_krama_6 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[0])
+        if (((ganita_krama_6 >> (vistara_panjika - 1)) & 1'b1) ^ madhyama_datta_panjika[0])
             ganita_krama_7 = (ganita_krama_6 << 1) ^ bhajaka_bahupada_panjika;
         else
             ganita_krama_7 = (ganita_krama_6 << 1);
@@ -142,11 +151,26 @@ module sarvatrika_chakriya_punaravritti #(
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
+            madhyama_sthiti_panjika <= 32'h0;
+            madhyama_datta_panjika  <= 4'h0;
+            madhyama_vaidha_dhvaja  <= 1'b0;
             chakriya_sthiti_panjika <= 32'h0000FFFF;
-        end else if (punahprarambha_svikarana) begin
-            chakriya_sthiti_panjika <= prarambhika_beeja_panjika;
-        end else if (pravishti_lekhana_sanketa) begin
-            chakriya_sthiti_panjika <= ganita_krama_7;
+        end else begin
+            // Stage 1 Pipeline Register
+            if (pravishti_lekhana_sanketa) begin
+                madhyama_sthiti_panjika <= ganita_krama_3;
+                madhyama_datta_panjika  <= prayukta_nivesha[3:0];
+                madhyama_vaidha_dhvaja  <= 1'b1;
+            end else begin
+                madhyama_vaidha_dhvaja  <= 1'b0;
+            end
+
+            // Stage 2 State Register
+            if (punahprarambha_svikarana) begin
+                chakriya_sthiti_panjika <= prarambhika_beeja_panjika;
+            end else if (madhyama_vaidha_dhvaja) begin
+                chakriya_sthiti_panjika <= ganita_krama_7;
+            end
         end
     end
 
