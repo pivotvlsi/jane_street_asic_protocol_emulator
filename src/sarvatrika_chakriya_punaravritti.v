@@ -73,7 +73,7 @@ module sarvatrika_chakriya_punaravritti #(
     end
 
     // ------------------------------------------------------------------------
-    // 2. Paravartita Nivesha (Static Bit Reversal)
+    // 2. Paravartita Nivesha (Static Bit Reversal & Input Feed Registering)
     // ------------------------------------------------------------------------
     wire [7:0] paravartita_nivesha = {
         pravishti_datta_nivesha[0], pravishti_datta_nivesha[1], pravishti_datta_nivesha[2], pravishti_datta_nivesha[3],
@@ -81,6 +81,20 @@ module sarvatrika_chakriya_punaravritti #(
     };
 
     wire [7:0] prayukta_nivesha = pratibimba_nivesha_dhvaja ? paravartita_nivesha : pravishti_datta_nivesha;
+
+    // Stage 0: Input Isolating Registers (Isolates CPU Decode & Store path from LFSR math)
+    reg [7:0] pravishti_panjika;
+    reg       pravishti_vaidha_panjika;
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            pravishti_panjika        <= 8'h00;
+            pravishti_vaidha_panjika <= 1'b0;
+        end else begin
+            pravishti_panjika        <= prayukta_nivesha;
+            pravishti_vaidha_panjika <= pravishti_lekhana_sanketa;
+        end
+    end
 
     // ------------------------------------------------------------------------
     // 3. Chakriya Ganana (Two-Stage Pipelined 4-Bit LFSR Blocks)
@@ -93,28 +107,28 @@ module sarvatrika_chakriya_punaravritti #(
     reg [3:0]  madhyama_datta_panjika;
     reg        madhyama_vaidha_dhvaja;
 
-    // Stage 1 Combinational Logic: Bits 0 to 3
+    // Stage 1 Combinational Logic: Bits 0 to 3 (Driven from Stage 0 registers)
     always @(*) begin
         // Bit 0
-        if (((chakriya_sthiti_panjika >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[7])
+        if (((chakriya_sthiti_panjika >> (vistara_panjika - 1)) & 1'b1) ^ pravishti_panjika[7])
             ganita_krama_0 = (chakriya_sthiti_panjika << 1) ^ bhajaka_bahupada_panjika;
         else
             ganita_krama_0 = (chakriya_sthiti_panjika << 1);
 
         // Bit 1
-        if (((ganita_krama_0 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[6])
+        if (((ganita_krama_0 >> (vistara_panjika - 1)) & 1'b1) ^ pravishti_panjika[6])
             ganita_krama_1 = (ganita_krama_0 << 1) ^ bhajaka_bahupada_panjika;
         else
             ganita_krama_1 = (ganita_krama_0 << 1);
 
         // Bit 2
-        if (((ganita_krama_1 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[5])
+        if (((ganita_krama_1 >> (vistara_panjika - 1)) & 1'b1) ^ pravishti_panjika[5])
             ganita_krama_2 = (ganita_krama_1 << 1) ^ bhajaka_bahupada_panjika;
         else
             ganita_krama_2 = (ganita_krama_1 << 1);
 
         // Bit 3
-        if (((ganita_krama_2 >> (vistara_panjika - 1)) & 1'b1) ^ prayukta_nivesha[4])
+        if (((ganita_krama_2 >> (vistara_panjika - 1)) & 1'b1) ^ pravishti_panjika[4])
             ganita_krama_3 = (ganita_krama_2 << 1) ^ bhajaka_bahupada_panjika;
         else
             ganita_krama_3 = (ganita_krama_2 << 1);
@@ -157,9 +171,9 @@ module sarvatrika_chakriya_punaravritti #(
             chakriya_sthiti_panjika <= 32'h0000FFFF;
         end else begin
             // Stage 1 Pipeline Register
-            if (pravishti_lekhana_sanketa) begin
+            if (pravishti_vaidha_panjika) begin
                 madhyama_sthiti_panjika <= ganita_krama_3;
-                madhyama_datta_panjika  <= prayukta_nivesha[3:0];
+                madhyama_datta_panjika  <= pravishti_panjika[3:0];
                 madhyama_vaidha_dhvaja  <= 1'b1;
             end else begin
                 madhyama_vaidha_dhvaja  <= 1'b0;
@@ -176,6 +190,7 @@ module sarvatrika_chakriya_punaravritti #(
 
     // ------------------------------------------------------------------------
     // 4. Phalita Nirgama Nirdharana (Result Output with XOR-Out & Byte Slice)
+    // Registered output to decouple CRC remainder extraction from CPU load/ALU zero flag
     // ------------------------------------------------------------------------
     wire [31:0] antima_shesha = chakriya_sthiti_panjika ^ utkrama_avarana_panjika;
 
@@ -191,13 +206,22 @@ module sarvatrika_chakriya_punaravritti #(
 
     wire [31:0] pradarshita_shesha = pratibimba_nirgama_dhvaja ? paravartita_shesha : antima_shesha;
 
+    reg [7:0] nirgama_chayanita_datta;
     always @(*) begin
         case (nirgama_bhaga_sanketa)
-            2'd0: nirgama_shesha_datta = pradarshita_shesha[7:0];
-            2'd1: nirgama_shesha_datta = pradarshita_shesha[15:8];
-            2'd2: nirgama_shesha_datta = pradarshita_shesha[23:16];
-            2'd3: nirgama_shesha_datta = pradarshita_shesha[31:24];
+            2'd0: nirgama_chayanita_datta = pradarshita_shesha[7:0];
+            2'd1: nirgama_chayanita_datta = pradarshita_shesha[15:8];
+            2'd2: nirgama_chayanita_datta = pradarshita_shesha[23:16];
+            2'd3: nirgama_chayanita_datta = pradarshita_shesha[31:24];
         endcase
+    end
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            nirgama_shesha_datta <= 8'h00;
+        end else begin
+            nirgama_shesha_datta <= nirgama_chayanita_datta;
+        end
     end
 
 endmodule
