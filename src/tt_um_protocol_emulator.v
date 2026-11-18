@@ -326,10 +326,7 @@ module tt_um_protocol_emulator (
     wire [3:0] cpu0_pc_op2;
     wire [3:0] cpu0_jmp_addr;
     
-    // Vibhakta rom_op (Split-Bank MUX: Cuts multiplexer fanout & logic depth by 50%)
-    wire [3:0] cpu0_rom_op_data_adha = cpu0_rom_op[cpu0_pc_op[5:0]];
-    wire [3:0] cpu0_rom_op_data_urdhva = cpu0_rom_op[{1'b1, cpu0_pc_op[5:0]}];
-    wire [3:0] cpu0_rom_op_data = cpu0_pc_op[6] ? cpu0_rom_op_data_urdhva : cpu0_rom_op_data_adha;
+    wire [3:0] cpu0_rom_op_data = cpu0_rom_op[cpu0_pc_op];
 
     wire [3:0] cpu0_rom_op1_data = cpu0_rom_op1[cpu0_pc_op1];
     wire [3:0] cpu0_rom_op2_data = cpu0_rom_op2[cpu0_pc_op2];
@@ -431,10 +428,7 @@ module tt_um_protocol_emulator (
     wire [3:0] cpu1_pc_op2;
     wire [3:0] cpu1_jmp_addr;
     
-    // Vibhakta rom_op (Split-Bank MUX: Cuts multiplexer fanout & logic depth by 50%)
-    wire [3:0] cpu1_rom_op_data_adha = cpu1_rom_op[cpu1_pc_op[5:0]];
-    wire [3:0] cpu1_rom_op_data_urdhva = cpu1_rom_op[{1'b1, cpu1_pc_op[5:0]}];
-    wire [3:0] cpu1_rom_op_data = cpu1_pc_op[6] ? cpu1_rom_op_data_urdhva : cpu1_rom_op_data_adha;
+    wire [3:0] cpu1_rom_op_data = cpu1_rom_op[cpu1_pc_op];
 
     wire [3:0] cpu1_rom_op1_data = cpu1_rom_op1[cpu1_pc_op1];
     wire [3:0] cpu1_rom_op2_data = cpu1_rom_op2[cpu1_pc_op2];
@@ -536,10 +530,7 @@ module tt_um_protocol_emulator (
     wire [3:0] cpu2_pc_op2;
     wire [3:0] cpu2_jmp_addr;
     
-    // Vibhakta rom_op (Split-Bank MUX: Cuts multiplexer fanout & logic depth by 50%)
-    wire [3:0] cpu2_rom_op_data_adha = cpu2_rom_op[cpu2_pc_op[5:0]];
-    wire [3:0] cpu2_rom_op_data_urdhva = cpu2_rom_op[{1'b1, cpu2_pc_op[5:0]}];
-    wire [3:0] cpu2_rom_op_data = cpu2_pc_op[6] ? cpu2_rom_op_data_urdhva : cpu2_rom_op_data_adha;
+    wire [3:0] cpu2_rom_op_data = cpu2_rom_op[cpu2_pc_op];
 
     wire [3:0] cpu2_rom_op1_data = cpu2_rom_op1[cpu2_pc_op1];
     wire [3:0] cpu2_rom_op2_data = cpu2_rom_op2[cpu2_pc_op2];
@@ -641,10 +632,7 @@ module tt_um_protocol_emulator (
     wire [3:0] cpu3_pc_op2;
     wire [3:0] cpu3_jmp_addr;
     
-    // Vibhakta rom_op (Split-Bank MUX: Cuts multiplexer fanout & logic depth by 50%)
-    wire [3:0] cpu3_rom_op_data_adha = cpu3_rom_op[cpu3_pc_op[5:0]];
-    wire [3:0] cpu3_rom_op_data_urdhva = cpu3_rom_op[{1'b1, cpu3_pc_op[5:0]}];
-    wire [3:0] cpu3_rom_op_data = cpu3_pc_op[6] ? cpu3_rom_op_data_urdhva : cpu3_rom_op_data_adha;
+    wire [3:0] cpu3_rom_op_data = cpu3_rom_op[cpu3_pc_op];
 
     wire [3:0] cpu3_rom_op1_data = cpu3_rom_op1[cpu3_pc_op1];
     wire [3:0] cpu3_rom_op2_data = cpu3_rom_op2[cpu3_pc_op2];
@@ -746,10 +734,7 @@ module tt_um_protocol_emulator (
     wire [3:0] cpu4_pc_op2;
     wire [3:0] cpu4_jmp_addr;
     
-    // Vibhakta rom_op (Split-Bank MUX: Cuts multiplexer fanout & logic depth by 50%)
-    wire [3:0] cpu4_rom_op_data_adha = cpu4_rom_op[cpu4_pc_op[5:0]];
-    wire [3:0] cpu4_rom_op_data_urdhva = cpu4_rom_op[{1'b1, cpu4_pc_op[5:0]}];
-    wire [3:0] cpu4_rom_op_data = cpu4_pc_op[6] ? cpu4_rom_op_data_urdhva : cpu4_rom_op_data_adha;
+    wire [3:0] cpu4_rom_op_data = cpu4_rom_op[cpu4_pc_op];
 
     wire [3:0] cpu4_rom_op1_data = cpu4_rom_op1[cpu4_pc_op1];
     wire [3:0] cpu4_rom_op2_data = cpu4_rom_op2[cpu4_pc_op2];
@@ -851,10 +836,7 @@ module tt_um_protocol_emulator (
     wire [3:0] cpu5_pc_op2;
     wire [3:0] cpu5_jmp_addr;
     
-    // Vibhakta rom_op (Split-Bank MUX: Cuts multiplexer fanout & logic depth by 50%)
-    wire [3:0] cpu5_rom_op_data_adha = cpu5_rom_op[cpu5_pc_op[5:0]];
-    wire [3:0] cpu5_rom_op_data_urdhva = cpu5_rom_op[{1'b1, cpu5_pc_op[5:0]}];
-    wire [3:0] cpu5_rom_op_data = cpu5_pc_op[6] ? cpu5_rom_op_data_urdhva : cpu5_rom_op_data_adha;
+    wire [3:0] cpu5_rom_op_data = cpu5_rom_op[cpu5_pc_op];
 
     wire [3:0] cpu5_rom_op1_data = cpu5_rom_op1[cpu5_pc_op1];
     wire [3:0] cpu5_rom_op2_data = cpu5_rom_op2[cpu5_pc_op2];
