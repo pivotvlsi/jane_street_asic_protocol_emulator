@@ -322,11 +322,12 @@ module tt_um_protocol_emulator (
 
     wire [6:0] cpu0_pc_op;
     wire [6:0] cpu0_pc_op_dvitaya;
+    wire [6:0] cpu0_pc_op_rom;
     wire [5:0] cpu0_pc_op1;
     wire [3:0] cpu0_pc_op2;
     wire [3:0] cpu0_jmp_addr;
     
-    wire [3:0] cpu0_rom_op_data = cpu0_rom_op[cpu0_pc_op];
+    wire [3:0] cpu0_rom_op_data = cpu0_rom_op[cpu0_pc_op_rom];
 
     wire [3:0] cpu0_rom_op1_data = cpu0_rom_op1[cpu0_pc_op1];
     wire [3:0] cpu0_rom_op2_data = cpu0_rom_op2[cpu0_pc_op2];
@@ -392,7 +393,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n_cpu0), .run(cpu0_run),
         .shodhana_virama(dbg_halt[0]),
         .pin_state(uio_in), .pin_out(cpu0_pin_out), .pin_dir(cpu0_pin_dir),
-        .pc_op(cpu0_pc_op), .pc_op_dvitaya(cpu0_pc_op_dvitaya), .rom_op_data(cpu0_rom_op_data),
+        .pc_op(cpu0_pc_op), .pc_op_dvitaya(cpu0_pc_op_dvitaya), .pc_op_rom(cpu0_pc_op_rom), .rom_op_data(cpu0_rom_op_data),
         .pc_op1(cpu0_pc_op1), .rom_op1_data(cpu0_rom_op1_data),
         .pc_op2(cpu0_pc_op2), .rom_op2_data(cpu0_rom_op2_data),
         .jmp_table_addr(cpu0_jmp_addr), .jmp_table_data(cpu0_jmp_data),
@@ -424,11 +425,12 @@ module tt_um_protocol_emulator (
 
     wire [6:0] cpu1_pc_op;
     wire [6:0] cpu1_pc_op_dvitaya;
+    wire [6:0] cpu1_pc_op_rom;
     wire [5:0] cpu1_pc_op1;
     wire [3:0] cpu1_pc_op2;
     wire [3:0] cpu1_jmp_addr;
     
-    wire [3:0] cpu1_rom_op_data = cpu1_rom_op[cpu1_pc_op];
+    wire [3:0] cpu1_rom_op_data = cpu1_rom_op[cpu1_pc_op_rom];
 
     wire [3:0] cpu1_rom_op1_data = cpu1_rom_op1[cpu1_pc_op1];
     wire [3:0] cpu1_rom_op2_data = cpu1_rom_op2[cpu1_pc_op2];
@@ -494,7 +496,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n_cpu1), .run(cpu1_run),
         .shodhana_virama(dbg_halt[1]),
         .pin_state(uio_in), .pin_out(cpu1_pin_out), .pin_dir(cpu1_pin_dir),
-        .pc_op(cpu1_pc_op), .pc_op_dvitaya(cpu1_pc_op_dvitaya), .rom_op_data(cpu1_rom_op_data),
+        .pc_op(cpu1_pc_op), .pc_op_dvitaya(cpu1_pc_op_dvitaya), .pc_op_rom(cpu1_pc_op_rom), .rom_op_data(cpu1_rom_op_data),
         .pc_op1(cpu1_pc_op1), .rom_op1_data(cpu1_rom_op1_data),
         .pc_op2(cpu1_pc_op2), .rom_op2_data(cpu1_rom_op2_data),
         .jmp_table_addr(cpu1_jmp_addr), .jmp_table_data(cpu1_jmp_data),
@@ -526,11 +528,12 @@ module tt_um_protocol_emulator (
 
     wire [6:0] cpu2_pc_op;
     wire [6:0] cpu2_pc_op_dvitaya;
+    wire [6:0] cpu2_pc_op_rom;
     wire [5:0] cpu2_pc_op1;
     wire [3:0] cpu2_pc_op2;
     wire [3:0] cpu2_jmp_addr;
     
-    wire [3:0] cpu2_rom_op_data = cpu2_rom_op[cpu2_pc_op];
+    wire [3:0] cpu2_rom_op_data = cpu2_rom_op[cpu2_pc_op_rom];
 
     wire [3:0] cpu2_rom_op1_data = cpu2_rom_op1[cpu2_pc_op1];
     wire [3:0] cpu2_rom_op2_data = cpu2_rom_op2[cpu2_pc_op2];
@@ -596,7 +599,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n_cpu2), .run(cpu2_run),
         .shodhana_virama(dbg_halt[2]),
         .pin_state(uio_in), .pin_out(cpu2_pin_out), .pin_dir(cpu2_pin_dir),
-        .pc_op(cpu2_pc_op), .pc_op_dvitaya(cpu2_pc_op_dvitaya), .rom_op_data(cpu2_rom_op_data),
+        .pc_op(cpu2_pc_op), .pc_op_dvitaya(cpu2_pc_op_dvitaya), .pc_op_rom(cpu2_pc_op_rom), .rom_op_data(cpu2_rom_op_data),
         .pc_op1(cpu2_pc_op1), .rom_op1_data(cpu2_rom_op1_data),
         .pc_op2(cpu2_pc_op2), .rom_op2_data(cpu2_rom_op2_data),
         .jmp_table_addr(cpu2_jmp_addr), .jmp_table_data(cpu2_jmp_data),
@@ -628,11 +631,12 @@ module tt_um_protocol_emulator (
 
     wire [6:0] cpu3_pc_op;
     wire [6:0] cpu3_pc_op_dvitaya;
+    wire [6:0] cpu3_pc_op_rom;
     wire [5:0] cpu3_pc_op1;
     wire [3:0] cpu3_pc_op2;
     wire [3:0] cpu3_jmp_addr;
     
-    wire [3:0] cpu3_rom_op_data = cpu3_rom_op[cpu3_pc_op];
+    wire [3:0] cpu3_rom_op_data = cpu3_rom_op[cpu3_pc_op_rom];
 
     wire [3:0] cpu3_rom_op1_data = cpu3_rom_op1[cpu3_pc_op1];
     wire [3:0] cpu3_rom_op2_data = cpu3_rom_op2[cpu3_pc_op2];
@@ -698,7 +702,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n_cpu3), .run(cpu3_run),
         .shodhana_virama(dbg_halt[3]),
         .pin_state(uio_in), .pin_out(cpu3_pin_out), .pin_dir(cpu3_pin_dir),
-        .pc_op(cpu3_pc_op), .pc_op_dvitaya(cpu3_pc_op_dvitaya), .rom_op_data(cpu3_rom_op_data),
+        .pc_op(cpu3_pc_op), .pc_op_dvitaya(cpu3_pc_op_dvitaya), .pc_op_rom(cpu3_pc_op_rom), .rom_op_data(cpu3_rom_op_data),
         .pc_op1(cpu3_pc_op1), .rom_op1_data(cpu3_rom_op1_data),
         .pc_op2(cpu3_pc_op2), .rom_op2_data(cpu3_rom_op2_data),
         .jmp_table_addr(cpu3_jmp_addr), .jmp_table_data(cpu3_jmp_data),
@@ -730,11 +734,12 @@ module tt_um_protocol_emulator (
 
     wire [6:0] cpu4_pc_op;
     wire [6:0] cpu4_pc_op_dvitaya;
+    wire [6:0] cpu4_pc_op_rom;
     wire [5:0] cpu4_pc_op1;
     wire [3:0] cpu4_pc_op2;
     wire [3:0] cpu4_jmp_addr;
     
-    wire [3:0] cpu4_rom_op_data = cpu4_rom_op[cpu4_pc_op];
+    wire [3:0] cpu4_rom_op_data = cpu4_rom_op[cpu4_pc_op_rom];
 
     wire [3:0] cpu4_rom_op1_data = cpu4_rom_op1[cpu4_pc_op1];
     wire [3:0] cpu4_rom_op2_data = cpu4_rom_op2[cpu4_pc_op2];
@@ -800,7 +805,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n_cpu4), .run(cpu4_run),
         .shodhana_virama(dbg_halt[4]),
         .pin_state(uio_in), .pin_out(cpu4_pin_out), .pin_dir(cpu4_pin_dir),
-        .pc_op(cpu4_pc_op), .pc_op_dvitaya(cpu4_pc_op_dvitaya), .rom_op_data(cpu4_rom_op_data),
+        .pc_op(cpu4_pc_op), .pc_op_dvitaya(cpu4_pc_op_dvitaya), .pc_op_rom(cpu4_pc_op_rom), .rom_op_data(cpu4_rom_op_data),
         .pc_op1(cpu4_pc_op1), .rom_op1_data(cpu4_rom_op1_data),
         .pc_op2(cpu4_pc_op2), .rom_op2_data(cpu4_rom_op2_data),
         .jmp_table_addr(cpu4_jmp_addr), .jmp_table_data(cpu4_jmp_data),
@@ -832,11 +837,12 @@ module tt_um_protocol_emulator (
 
     wire [6:0] cpu5_pc_op;
     wire [6:0] cpu5_pc_op_dvitaya;
+    wire [6:0] cpu5_pc_op_rom;
     wire [5:0] cpu5_pc_op1;
     wire [3:0] cpu5_pc_op2;
     wire [3:0] cpu5_jmp_addr;
     
-    wire [3:0] cpu5_rom_op_data = cpu5_rom_op[cpu5_pc_op];
+    wire [3:0] cpu5_rom_op_data = cpu5_rom_op[cpu5_pc_op_rom];
 
     wire [3:0] cpu5_rom_op1_data = cpu5_rom_op1[cpu5_pc_op1];
     wire [3:0] cpu5_rom_op2_data = cpu5_rom_op2[cpu5_pc_op2];
@@ -902,7 +908,7 @@ module tt_um_protocol_emulator (
         .clk(clk), .rst_n(rst_n_cpu5), .run(cpu5_run),
         .shodhana_virama(dbg_halt[5]),
         .pin_state(uio_in), .pin_out(cpu5_pin_out), .pin_dir(cpu5_pin_dir),
-        .pc_op(cpu5_pc_op), .pc_op_dvitaya(cpu5_pc_op_dvitaya), .rom_op_data(cpu5_rom_op_data),
+        .pc_op(cpu5_pc_op), .pc_op_dvitaya(cpu5_pc_op_dvitaya), .pc_op_rom(cpu5_pc_op_rom), .rom_op_data(cpu5_rom_op_data),
         .pc_op1(cpu5_pc_op1), .rom_op1_data(cpu5_rom_op1_data),
         .pc_op2(cpu5_pc_op2), .rom_op2_data(cpu5_rom_op2_data),
         .jmp_table_addr(cpu5_jmp_addr), .jmp_table_data(cpu5_jmp_data),

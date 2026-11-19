@@ -16,6 +16,7 @@ module cpu_core (
     // Split-Stream Instruction ROM Interfaces
     output reg  [6:0]  pc_op,
     output reg  [6:0]  pc_op_dvitaya,
+    (* keep = "true" *) output reg [6:0] pc_op_rom,
     input  wire [3:0]  rom_op_data,
     
     output reg  [5:0]  pc_op1,
@@ -99,6 +100,7 @@ module cpu_core (
         if (!rst_n) begin
             pc_op         <= 0;
             pc_op_dvitaya <= 0;
+            pc_op_rom     <= 0;
             pc_op1        <= 0;
             pc_op2        <= 0;
             acc           <= 0;
@@ -110,6 +112,7 @@ module cpu_core (
         end else if (!run) begin
             pc_op         <= 0;
             pc_op_dvitaya <= 0;
+            pc_op_rom     <= 0;
             pc_op1        <= 0;
             pc_op2        <= 0;
         end else if (!mem_stall && !shodhana_virama) begin
@@ -157,12 +160,14 @@ module cpu_core (
                 // Take Branch (Jump)
                 pc_op         <= jmp_table_data[16:10];
                 pc_op_dvitaya <= jmp_table_data[16:10];
+                pc_op_rom     <= jmp_table_data[16:10];
                 pc_op1        <= jmp_table_data[9:4];
                 pc_op2        <= jmp_table_data[3:0];
             end else begin
                 // Normal PC Increment
                 pc_op         <= pc_op + 1;
                 pc_op_dvitaya <= pc_op_dvitaya + 1;
+                pc_op_rom     <= pc_op_rom + 1;
                 if (!is_1_nibble) pc_op1 <= pc_op1 + 1;
                 if (is_3_nibble) pc_op2 <= pc_op2 + 1;
             end
