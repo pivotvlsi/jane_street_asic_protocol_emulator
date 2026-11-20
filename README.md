@@ -68,7 +68,8 @@ To understand the architecture and how to run the verification suite, please ref
 4.  **[Pin Mapping](pin_mapping.md)**: The physical pinout mapping for the Tiny Tapeout ASIC framework.
 5.  **[Verification Guide](verif_readme.md)**: Instructions on how to compile the assembly firmware and run the automated testbenches.
 6.  **[Formal Verification & Verification Architecture](formal_verification.md)**: Details the formal verification methodology (SymbiYosys, SVA), mathematical invariants (FIFO safety, Two-Wire Debugger isolation, GPIO contention), and regression matrix.
-7.  **[Limitations & Constraints](limitations.md)**: An honest look at the architectural bottlenecks, software debugging complexities, and theoretical maximum throughput.
+7.  **[Physical Design & Silicon Implementation Specification](GDS_SPEC.md)**: Physical tapeout parameters, 8x4 tile allocation, standard cell breakdown, and signoff metrics on IHP 130nm.
+8.  **[Limitations & Constraints](limitations.md)**: An honest look at the architectural bottlenecks, software debugging complexities, and theoretical maximum throughput.
 
 ---
 *Built with silicon passion by [PivotVLSI](https://pivotvlsi.in/)*
